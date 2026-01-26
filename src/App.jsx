@@ -20,8 +20,9 @@ import AdminLayout from './pages/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminProducts from './pages/admin/AdminProducts'
 import AdminOrders from './pages/admin/AdminOrders'
-import AdminUsers from './pages/admin/AdminUsers'
+
 import AdminSettings from './pages/admin/AdminSettings'
+import AdminCategories from './pages/admin/AdminCategories'
 import Profile from './pages/client/Profile'
 import Orders from './pages/client/Orders'
 import ScrollToTop from './common/ScrollToTop'
@@ -39,7 +40,7 @@ function App() {
         <Route path='dashboard' element={<AdminDashboard />} />
         <Route path='products' element={<AdminProducts />} />
         <Route path='orders' element={<AdminOrders />} />
-        <Route path='users' element={<AdminUsers />} />
+        <Route path='categories' element={<AdminCategories />} />
         <Route path='settings' element={<AdminSettings />} />
       </Route>
 

@@ -5,7 +5,7 @@ import {
   LayoutDashboard, 
   Package, 
   ShoppingCart, 
-  Users, 
+  FolderTree,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -17,7 +17,7 @@ const navItems = [
   { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Products', path: '/admin/products', icon: Package },
   { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
-  { name: 'Users', path: '/admin/users', icon: Users },
+  { name: 'Categories', path: '/admin/categories', icon: FolderTree },
   { name: 'Settings', path: '/admin/settings', icon: Settings },
 ]
 
@@ -35,7 +35,7 @@ const AdminSidebar = ({ collapsed, setCollapsed }) => {
           animate={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : 'auto' }}
           className="flex items-center gap-3 overflow-hidden"
         >
-          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+          <div className="w-10 h-10 bg-linear-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
             <Store size={20} className="text-white" />
           </div>
           <span className="text-white font-bold text-lg whitespace-nowrap">Sun Mobiles</span>

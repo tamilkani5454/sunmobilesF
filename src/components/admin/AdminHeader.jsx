@@ -38,7 +38,7 @@ const AdminHeader = ({ onMenuClick }) => {
             <p className="text-sm font-semibold text-gray-900">Admin User</p>
             <p className="text-xs text-gray-500">Administrator</p>
           </div>
-          <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+          <div className="w-9 h-9 bg-linear-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
             A
           </div>
           <ChevronDown size={16} className="text-gray-400 hidden sm:block" />
