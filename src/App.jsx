@@ -16,6 +16,12 @@ import Checkout from './pages/client/Checkout'
 import Login from './pages/client/Login'
 import Signup from './pages/client/Signup'
 import AdminLogin from './pages/admin/AdminLogin'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminProducts from './pages/admin/AdminProducts'
+import AdminOrders from './pages/admin/AdminOrders'
+import AdminUsers from './pages/admin/AdminUsers'
+import AdminSettings from './pages/admin/AdminSettings'
 import Profile from './pages/client/Profile'
 import Orders from './pages/client/Orders'
 import ScrollToTop from './common/ScrollToTop'
@@ -26,29 +32,46 @@ function App() {
 
   return (
     <>
-     <Navbar/>
      <Routes>
-      <Route path='/' element={<Home/>}/>
-      <Route path='/about' element={<About/>} />
-      <Route path='/contact' element={<Contact />} />
-      <Route path='/products' element={<Products />} />
-      <Route path='/products/:id' element={<ProductDetails />} />
-      <Route path='/faq' element={<Faq />} />
-      <Route path='/privacy-policy' element={<PrivacyPolicy />} />
-      <Route path='/terms' element={<TOS />} />
-      <Route path='/shipping' element={<Shipping />} />
-      <Route path='/cart' element={<Cart />} />
-      <Route path='/checkout' element={<Checkout />} />
-      <Route path='/login' element={<Login />} />
-      <Route path='/signup' element={<Signup />} />
+      {/* Admin Routes - No Navbar/Footer */}
       <Route path='/admin' element={<AdminLogin />} />
-      <Route path='/profile' element={<Profile />} />
-      <Route path='/orders' element={<Orders />} />
+      <Route path='/admin/*' element={<AdminLayout />}>
+        <Route path='dashboard' element={<AdminDashboard />} />
+        <Route path='products' element={<AdminProducts />} />
+        <Route path='orders' element={<AdminOrders />} />
+        <Route path='users' element={<AdminUsers />} />
+        <Route path='settings' element={<AdminSettings />} />
+      </Route>
+
+      {/* Client Routes - With Navbar/Footer */}
+      <Route path='/*' element={
+        <>
+          <Navbar/>
+          <Routes>
+            <Route path='/' element={<Home/>}/>
+            <Route path='/about' element={<About/>} />
+            <Route path='/contact' element={<Contact />} />
+            <Route path='/products' element={<Products />} />
+            <Route path='/products/:id' element={<ProductDetails />} />
+            <Route path='/faq' element={<Faq />} />
+            <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+            <Route path='/terms' element={<TOS />} />
+            <Route path='/shipping' element={<Shipping />} />
+            <Route path='/cart' element={<Cart />} />
+            <Route path='/checkout' element={<Checkout />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/signup' element={<Signup />} />
+            <Route path='/profile' element={<Profile />} />
+            <Route path='/orders' element={<Orders />} />
+          </Routes>
+          <ScrollToTop />
+          <Footer/>
+        </>
+      }/>
      </Routes>
-     <ScrollToTop />
-     <Footer/>
     </>
   )
 }
 
 export default App
+

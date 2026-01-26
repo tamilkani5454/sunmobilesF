@@ -126,11 +126,11 @@ const ProductDetails = () => {
                                                 <span className="text-gray-400 text-xs ml-1">(120+ Reviews)</span>
                                             </div>
                                         </div>
-                                        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">{product.name}</h1>
+                                        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">{product.name}</h1>
                                     </div>
 
                                     <div className="flex items-baseline gap-4 pb-6 border-b border-gray-100">
-                                        <span className="text-5xl font-bold text-gray-900">₹{product.offerPrice.toLocaleString()}</span>
+                                        <span className="text-3xl font-bold text-gray-900">₹{product.offerPrice.toLocaleString()}</span>
                                         <div className="flex flex-col">
                                             <span className="text-xl text-gray-400 line-through">₹{product.price.toLocaleString()}</span>
                                             <span className="text-green-600 text-xs font-bold uppercase tracking-wide">Inclusive of all taxes</span>
@@ -209,8 +209,8 @@ const ProductDetails = () => {
                                                         onClick={handleAddToCart}
                                                         className={`w-full rounded-2xl h-auto py-4 text-lg font-bold shadow-xl transition-all duration-500 flex items-center justify-center gap-3 overflow-hidden relative ${
                                                             isAddedToCart 
-                                                                ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-500 hover:to-emerald-500 text-white shadow-green-500/30' 
-                                                                : 'bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white shadow-gray-900/20'
+                                                                ? 'bg-linear-to-r from-green-500 to-emerald-500 hover:from-green-500 hover:to-emerald-500 text-white shadow-green-500/30' 
+                                                                : 'bg-linear-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white shadow-gray-900/20'
                                                         }`}
                                                     >
                                                         {/* Ripple effect */}
