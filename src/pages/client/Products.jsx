@@ -194,7 +194,7 @@ const Products = () => {
         {/* Search & Mobile Filter - Sticky */}
 
         {/* Search & Mobile Filter - Sticky */}
-        <div className="sticky top-18.25 z-30 bg-white/80 backdrop-blur-md py-4 -mx-4 px-4 md:-mx-8 md:px-8 mb-8 border-y border-gray-100 shadow-sm transition-all duration-300">
+        <div className="sticky top-16.25 z-30 bg-white/80 backdrop-blur-md py-1 -mx-4 px-4 md:-mx-8 md:px-8 mb-8 border-y border-gray-100 shadow-sm transition-all duration-300">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
              {/* Desktop Context / Stats */}
              <div className="hidden md:block">

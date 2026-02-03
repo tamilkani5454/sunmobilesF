@@ -2,7 +2,7 @@ const Products = [
     {
         id: 1,
         name: "Sun X Pro 5G",
-        category: "Mobiles",
+        category: "Gadgets",
         subCategory: "Smartphones",
         brand: "Sun",
         price: 18999,
@@ -810,5 +810,43 @@ const Products = [
         status: "active"
     }
 ];
+const categories=[
+  { "_id": "C1", "name": "Gadgets" },
+  { "_id": "C2", "name": "Mobiles" },
+  { "_id": "C3", "name": "Computers" },
+  { "_id": "C4", "name": "Accessories" },
+  { "_id": "C5", "name": "Appliances" },
+  { "_id": "C6", "name": "Wearables" },
+  { "_id": "C7", "name": "Gaming" },
+  { "_id": "C8", "name": "Audio" },
+  { "_id": "C9", "name": "Office" },
+  { "_id": "C10", "name": "Smart Home" }
+]
 
+const subCategories=[
+  { "_id": "SC1", "name": "Smart Devices", "category": "C1" },
+  { "_id": "SC2", "name": "Feature Phones", "category": "C2" },
+  { "_id": "SC3", "name": "Smartphones", "category": "C2" },
+  { "_id": "SC4", "name": "Laptops", "category": "C3" },
+  { "_id": "SC5", "name": "Keyboards", "category": "C4" },
+  { "_id": "SC6", "name": "Refrigerators", "category": "C5" },
+  { "_id": "SC7", "name": "Smart Watches", "category": "C6" },
+  { "_id": "SC8", "name": "Consoles", "category": "C7" },
+  { "_id": "SC9", "name": "Headphones", "category": "C8" },
+  { "_id": "SC10", "name": "Printers", "category": "C9" }
+]
+
+const brands=[
+  { "_id": "B1", "name": "Logitech", "subCategory": "SC5" },
+  { "_id": "B2", "name": "Samsung", "subCategory": "SC3" },
+  { "_id": "B3", "name": "Nokia", "subCategory": "SC2" },
+  { "_id": "B4", "name": "Apple", "subCategory": "SC3" },
+  { "_id": "B5", "name": "HP", "subCategory": "SC4" },
+  { "_id": "B6", "name": "Dell", "subCategory": "SC4" },
+  { "_id": "B7", "name": "Sony", "subCategory": "SC9" },
+  { "_id": "B8", "name": "Boat", "subCategory": "SC9" },
+  { "_id": "B9", "name": "LG", "subCategory": "SC6" },
+  { "_id": "B10", "name": "Canon", "subCategory": "SC10" }
+]
+export { categories, subCategories, brands };
 export default Products;

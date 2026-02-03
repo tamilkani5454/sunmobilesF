@@ -262,7 +262,7 @@ const AdminOrders = () => {
                       <span className="text-gray-600">{selectedOrder.customer.phone}</span>
                     </div>
                     <div className="flex items-start gap-3 text-sm">
-                      <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
                         <MapPin size={14} className="text-gray-500" />
                       </div>
                       <span className="text-gray-600">{selectedOrder.address}</span>

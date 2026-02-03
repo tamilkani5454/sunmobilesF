@@ -72,7 +72,7 @@ const Cart = () => {
                                     className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex gap-4 transition-all hover:shadow-md relative overflow-hidden"
                                 >
                                     {/* Image */}
-                                    <div className="w-20 h-20 sm:w-28 sm:h-28 bg-gray-50 rounded-xl flex-shrink-0 p-2 border border-gray-100 self-center">
+                                    <div className="w-20 h-20 sm:w-28 sm:h-28 bg-gray-50 rounded-xl shrink-0 p-2 border border-gray-100 self-center">
                                         <img src={item.image} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
                                     </div>
 

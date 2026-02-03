@@ -68,8 +68,8 @@ const AddToCartButton = ({ productId }) => {
                     onClick={handleAddToCart}
                     className={`w-full overflow-hidden relative transition-all duration-500 ${
                         isAdded 
-                            ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white border-green-500 hover:from-green-500 hover:to-emerald-500 shadow-lg shadow-green-500/30' 
-                            : 'hover:bg-gradient-to-r hover:from-orange-500 hover:to-orange-600 hover:text-white border-orange-200 text-orange-500 hover:shadow-lg hover:shadow-orange-500/20'
+                            ? 'bg-linear-to-r from-green-500 to-emerald-500 text-white border-green-500 hover:from-green-500 hover:to-emerald-500 shadow-lg shadow-green-500/30' 
+                            : 'hover:bg-linear-to-r hover:from-orange-500 hover:to-orange-600 hover:text-white border-orange-200 text-orange-500 hover:shadow-lg hover:shadow-orange-500/20'
                     }`}
                 >
                     {/* Ripple effect background */}
@@ -152,7 +152,7 @@ const Cards = ({ products }) => {
                         <Link to={`/products/${product.id}`}>
                             <h3 className="font-semibold md:text-lg text-gray-800 mb-2 truncate hover:text-orange-600 transition-colors">{product.name}</h3>
                         </Link>
-                        <p>In Stock: {product.stock}</p>
+                        <p className='text-gray-400 text-xs'>Avl Stock: <span className="font-semibold">{product.stock}</span></p>
                         <div className="flex flex-col justify-between items-center mt-2">
                             <div className='flex gap-2'>
                                 <span className="text-xl font-bold text-gray-600 line-through">₹{product.price}</span>

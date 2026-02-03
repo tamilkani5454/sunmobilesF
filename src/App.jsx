@@ -25,7 +25,9 @@ import AdminSettings from './pages/admin/AdminSettings'
 import AdminCategories from './pages/admin/AdminCategories'
 import Profile from './pages/client/Profile'
 import Orders from './pages/client/Orders'
+import OrderDetails from './pages/client/OrderDetails'
 import ScrollToTop from './common/ScrollToTop'
+import ScrollToTopOnNavigate from './common/ScrollToTopOnNavigate'
 
 
 function App() {
@@ -33,6 +35,7 @@ function App() {
 
   return (
     <>
+     <ScrollToTopOnNavigate />
      <Routes>
       {/* Admin Routes - No Navbar/Footer */}
       <Route path='/admin' element={<AdminLogin />} />
@@ -64,6 +67,7 @@ function App() {
             <Route path='/signup' element={<Signup />} />
             <Route path='/profile' element={<Profile />} />
             <Route path='/orders' element={<Orders />} />
+            <Route path='/orders/:id' element={<OrderDetails />} />
           </Routes>
           <ScrollToTop />
           <Footer/>

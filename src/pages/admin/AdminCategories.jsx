@@ -1,299 +1,377 @@
-import React, { useState } from 'react'
+
+import { useState, useContext, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Plus, 
-  Trash2, 
+import {
+  Plus,
+  Trash2,
   X,
   FolderTree,
   Tag,
   Layers,
   ChevronRight,
-  ChevronDown,
-  AlertTriangle
+  AlertTriangle,
+  Pencil
 } from 'lucide-react'
-
-// Sample data with relationships
-const categoriesData = [
-  { 
-    id: 1, 
-    name: 'Mobile', 
-    subCategories: [
-      { id: 1, name: 'Smartphone' },
-      { id: 2, name: 'Tablet' },
-      { id: 3, name: 'Button Phone' },
-      { id: 4, name: 'Feature Phone' },
-    ],
-    brands: [
-      { id: 1, name: 'Apple', logo: '🍎' },
-      { id: 2, name: 'Samsung', logo: '📱' },
-      { id: 3, name: 'OnePlus', logo: '🔴' },
-      { id: 4, name: 'Vivo', logo: '💙' },
-      { id: 5, name: 'Xiaomi', logo: '🟠' },
-      { id: 6, name: 'Realme', logo: '💛' },
-    ]
-  },
-  { 
-    id: 2, 
-    name: 'Accessories', 
-    subCategories: [
-      { id: 5, name: 'Chargers' },
-      { id: 6, name: 'Cases' },
-      { id: 7, name: 'Screen Guards' },
-      { id: 8, name: 'Earphones' },
-    ],
-    brands: [
-      { id: 7, name: 'Boat', logo: '🎧' },
-      { id: 8, name: 'JBL', logo: '🔊' },
-      { id: 9, name: 'Anker', logo: '🔌' },
-    ]
-  },
-  { 
-    id: 3, 
-    name: 'Wearables', 
-    subCategories: [
-      { id: 9, name: 'Smartwatch' },
-      { id: 10, name: 'Fitness Band' },
-    ],
-    brands: [
-      { id: 1, name: 'Apple', logo: '🍎' },
-      { id: 2, name: 'Samsung', logo: '📱' },
-      { id: 10, name: 'Noise', logo: '⌚' },
-      { id: 11, name: 'Fire-Boltt', logo: '🔥' },
-    ]
-  },
-]
+import { appContext } from '../../context/Context'
 
 const AdminCategories = () => {
-  const [selectedCategory, setSelectedCategory] = useState(categoriesData[0])
-  const [showModal, setShowModal] = useState(false)
-  const [modalType, setModalType] = useState('')
-  const [expandedCategories, setExpandedCategories] = useState([1])
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [deleteItem, setDeleteItem] = useState(null)
-  const [deleteType, setDeleteType] = useState('')
+  const { CSB, refreshCSB } = useContext(appContext)
 
-  const handleAdd = (type) => {
-    setModalType(type)
-    setShowModal(true)
+  // Local state for UI selection
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
+  const [selectedBrand, setSelectedBrand] = useState(null);
+  const [activeTab, setActiveTab] = useState('category'); // 'category', 'subcategory', 'brand' (for mobile)
+
+  // Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState(''); // 'category', 'subcategory', 'brand'
+  const [newItemName, setNewItemName] = useState('');
+  const [modalMode, setModalMode] = useState('create'); // 'create' or 'edit'
+  const [editingItem, setEditingItem] = useState(null);
+  const [filteredSubCategories, setFilteredSubCategories] = useState([])
+  const [filteredBrands, setFilteredBrand] = useState([])
+
+  // Delete Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [deleteType, setDeleteType] = useState(''); // 'category', 'subcategory', 'brand'
+
+  // Derived Data
+  const categories = CSB?.categories || [];
+  const subCategories = CSB?.subCategories || [];
+  const brands = CSB?.brands || [];
+
+  // --- Filter Logic ---
+  const filterSubCat = () => {
+    console.log(selectedCategory)
+    const filteredSubCategories = subCategories.filter(sub => sub.Category === selectedCategory)
+    setFilteredSubCategories(filteredSubCategories)
   }
-
-  const handleDeleteClick = (type, item) => {
-    setDeleteType(type)
-    setDeleteItem(item)
-    setShowDeleteModal(true)
+  const filterBrand = () => {
+    const filteredBrand = brands.filter(brand => brand.SubCategory === selectedSubCategory)
+    setFilteredBrand(filteredBrand)
   }
+  useEffect(() => {
+    filterSubCat()
+  }, [selectedCategory])
 
-  const confirmDelete = () => {
-    // Add your delete logic here
-    console.log(`Deleting ${deleteType}:`, deleteItem)
-    setShowDeleteModal(false)
-    setDeleteItem(null)
-    setDeleteType('')
-  }
+  useEffect(() => {
+    filterBrand()
+  }, [selectedSubCategory])
 
-  const toggleCategory = (categoryId) => {
-    if (expandedCategories.includes(categoryId)) {
-      setExpandedCategories(expandedCategories.filter(id => id !== categoryId))
-    } else {
-      setExpandedCategories([...expandedCategories, categoryId])
+
+
+  // --- Handling Selection ---
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+    setSelectedSubCategory(null);
+    setActiveTab('subcategory');
+
+
+
+  };
+
+  const handleSubCategoryClick = (subCategory) => {
+    setSelectedSubCategory(subCategory);
+    setActiveTab('brand');
+  };
+
+  // --- Handling Modals ---
+  const openAddModal = (type) => {
+    setModalType(type);
+    setNewItemName('');
+    setModalMode('create');
+    setEditingItem(null);
+    setShowModal(true);
+  };
+
+  const handleEditRequest = (type, item) => {
+    console.log("Edit Request:", type, item);
+    setModalType(type);
+    setNewItemName(item.name);
+    setModalMode('edit');
+    setEditingItem(item);
+    setShowModal(true);
+  };
+
+  const handleDeleteRequest = (type, item) => {
+    console.log("Delete Request:", type, item);
+    setDeleteType(type);
+    setItemToDelete(item);
+    setShowDeleteModal(true);
+  };
+
+  // --- API Interactions ---
+  // Using explicit API endpoints based on user's previous code pattern.
+  // NOTE: Verify these endpoints and body payloads with your backend.
+  const handleSaveItem = async () => {
+    if (modalMode == "create") {
+
+      const API_BASE = import.meta.env.VITE_API_BASE_URL + "/uploads";
+      const body = { name: newItemName.trim() };
+      let url;
+      if (modalType === 'category') url = "/add-category";
+      if (modalType === 'subcategory') body.categoryId = selectedCategory;
+      if (modalType === 'subcategory') url = '/add-subcategory';
+      if (modalType === 'brand') body.subCategoryID = selectedSubCategory;
+      if (modalType === 'brand') url = '/add-brand';
+      const response = await fetch(API_BASE + url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      })
     }
-    setSelectedCategory(categoriesData.find(c => c.id === categoryId))
+    else if (modalMode === "edit") {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL + "/update";
+      const body = { name: newItemName.trim() };
+      let url;
+      if (modalType === 'category') url = "/edit-category";
+      if (modalType === 'category') body.categoryId = selectedCategory;
+      if (modalType === 'subcategory') url = '/edit-subcategory';
+      if (modalType === 'subcategory') body.subCategoryID = selectedSubCategory;
+      if (modalType === 'brand') url = '/edit-brand';
+      if (modalType === 'brand') ; body.brandID = selectedBrand;
+      const response = await fetch(API_BASE + url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      })
+    }
   }
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    const API_BASE = import.meta.env.VITE_API_BASE_URL;
+    let url = '';
+
+    // CONFIGURE DELETE ENDPOINTS
+    if (deleteType === 'category') url = `${API_BASE}/uploads/delete-category/${itemToDelete._id}`;
+    if (deleteType === 'subcategory') url = `${API_BASE}/uploads/delete-subcategory/${itemToDelete._id}`;
+    if (deleteType === 'brand') url = `${API_BASE}/uploads/delete-brand/${itemToDelete._id}`;
+
+    try {
+      console.log(`Deleting item at ${url}`);
+      const response = await fetch(url, { method: 'DELETE' });
+
+      if (response.ok) {
+        await refreshCSB();
+
+        // Cleanup selection if deleted
+        if (deleteType === 'category' && selectedCategory?._id === itemToDelete._id) {
+          setSelectedCategory(null);
+          setSelectedSubCategory(null);
+        }
+        if (deleteType === 'subcategory' && selectedSubCategory?._id === itemToDelete._id) {
+          setSelectedSubCategory(null);
+        }
+      } else {
+        console.error("Failed to delete", await response.text());
+        // alert("Failed to delete item"); 
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+    }
+
+    // Fallback/Forced refresh
+    if (refreshCSB) await refreshCSB();
+    setShowDeleteModal(false);
+    setItemToDelete(null);
+  };
+
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
+    <div className="space-y-6 h-[calc(100vh-100px)]">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Categories Management</h1>
-          <p className="text-gray-500 mt-1">Manage categories with their related sub categories and brands</p>
+          <h1 className="text-2xl font-bold text-gray-900">Categories & Data</h1>
+          <p className="text-gray-500 mt-1">Manage Categories, Sub-categories, and Brands</p>
         </div>
-        <button 
-          onClick={() => handleAdd('category')}
-          className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-orange-500/25"
-        >
-          <Plus size={18} />
-          Add Category
-        </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Categories List - Left Side */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50">
-              <h2 className="font-bold text-gray-900 flex items-center gap-2">
-                <FolderTree size={18} className="text-orange-500" />
-                Categories
-              </h2>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {categoriesData.map((category) => (
-                <div key={category.id}>
-                  <button
-                    onClick={() => toggleCategory(category.id)}
-                    className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${
-                      selectedCategory?.id === category.id ? 'bg-orange-50 border-l-4 border-orange-500' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      {expandedCategories.includes(category.id) ? (
-                        <ChevronDown size={18} className="text-gray-400" />
-                      ) : (
-                        <ChevronRight size={18} className="text-gray-400" />
-                      )}
-                      <div className="text-left">
-                        <span className={`font-medium ${selectedCategory?.id === category.id ? 'text-orange-600' : 'text-gray-900'}`}>
-                          {category.name}
-                        </span>
-                        <p className="text-xs text-gray-500">{category.subCategories.length} sub, {category.brands.length} brands</p>
-                      </div>
-                    </div>
-                    <button 
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleDeleteClick('category', category); }}
-                        className="p-2.5 sm:p-1.5 hover:bg-red-100 rounded-lg transition-colors text-gray-400 hover:text-red-600"
-                      >
-                        <Trash2 size={16} className="sm:w-3.5 sm:h-3.5" />
-                      </button>
-                  </button>
+      {/* Mobile Tab Navigation */}
+      <div className="flex lg:hidden bg-gray-100 p-1 rounded-xl mb-4">
+        {['category', 'subcategory', 'brand'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === tab
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+              }`}
+          >
+            {tab === 'category' ? 'Categories' : tab === 'subcategory' ? 'Sub Categories' : 'Brands'}
+          </button>
+        ))}
+      </div>
+
+      {/* Main 3-Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full pb-6">
+
+        {/* Column 1: Categories */}
+        <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden ${activeTab === 'category' ? 'block' : 'hidden lg:flex'
+          }`}>
+          <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+            <h2 className="font-bold text-gray-900 flex items-center gap-2">
+              <FolderTree size={18} className="text-orange-500" />
+              Categories
+            </h2>
+            <button
+              onClick={() => openAddModal('category')}
+              className="p-1.5 bg-white border border-gray-200 hover:border-orange-500 hover:text-orange-500 rounded-lg transition-colors shadow-sm"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            {categories.map((cat) => (
+              <div
+                key={cat._id}
+                onClick={() => handleCategoryClick(cat._id)}
+                className={`p-3 rounded-xl cursor-pointer flex justify-between items-center group transition-colors ${selectedCategory === cat._id
+                  ? 'bg-orange-50 border-orange-200 text-orange-900'
+                  : 'hover:bg-gray-50 text-gray-700'
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-8 rounded-full ${selectedCategory === cat._id ? 'bg-orange-500' : 'bg-gray-200 group-hover:bg-orange-200'}`}></div>
+                  <span className="font-medium capitalize">{cat.name}</span>
                 </div>
-              ))}
-            </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleEditRequest('category', cat); handleCategoryClick(cat._id) }}
+                    className="p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-lg opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDeleteRequest('category', cat); }}
+                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                  <ChevronRight size={16} className={`text-gray-400 ${selectedCategory === cat._id ? 'text-orange-500' : ''}`} />
+                </div>
+              </div>
+            ))}
+            {categories.length === 0 && (
+              <div className="text-center py-10 text-gray-400 text-sm">No Categories</div>
+            )}
           </div>
         </div>
 
-        {/* Sub Categories & Brands - Right Side */}
-        <div className="lg:col-span-2 space-y-6">
-          {selectedCategory && (
-            <>
-              {/* Selected Category Header */}
-              <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-5 text-white">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-orange-100 text-sm">Selected Category</p>
-                    <h2 className="text-2xl font-bold">{selectedCategory.name}</h2>
+        {/* Column 2: SubCategories */}
+        <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden transition-opacity duration-200 ${!selectedCategory ? 'opacity-50 pointer-events-none' : ''
+          } ${activeTab === 'subcategory' ? 'block' : 'hidden lg:flex'}`}>
+          <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+            <h2 className="font-bold text-gray-900 flex items-center gap-2">
+              <Layers size={18} className="text-purple-500" />
+              Sub Categories
+            </h2>
+            <button
+              onClick={() => openAddModal('subcategory')}
+              className="p-1.5 bg-white border border-gray-200 hover:border-purple-500 hover:text-purple-500 rounded-lg transition-colors shadow-sm"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            {!selectedCategory ? (
+              <div className="text-center py-10 text-gray-400 text-sm">Select a category first</div>
+            ) : filteredSubCategories.length === 0 ? (
+              <div className="text-center py-10 text-gray-400 text-sm">No subcategories found</div>
+            ) : (
+              filteredSubCategories.map(sub => (
+                <div
+                  key={sub._id}
+                  onClick={() => handleSubCategoryClick(sub._id)}
+                  className={`p-3 rounded-xl cursor-pointer flex justify-between items-center group transition-colors ${selectedSubCategory === sub._id
+                    ? 'bg-purple-50 border-purple-200 text-purple-900'
+                    : 'hover:bg-gray-50 text-gray-700'
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium capitalize">{sub.name}</span>
                   </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold">{selectedCategory.subCategories.length + selectedCategory.brands.length}</div>
-                    <p className="text-orange-100 text-sm">Total Items</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sub Categories */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
-              >
-                <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                    <Layers size={18} className="text-purple-500" />
-                    Sub Categories
-                    <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-600 rounded-full text-xs font-semibold">
-                      {selectedCategory.subCategories.length}
-                    </span>
-                  </h3>
-                  <button 
-                    onClick={() => handleAdd('subcategory')}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors"
-                  >
-                    <Plus size={14} />
-                    Add
-                  </button>
-                </div>
-                <div className="p-4">
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCategory.subCategories.map((sub, index) => (
-                      <motion.div
-                        key={sub.id}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="group flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-purple-50 rounded-xl transition-colors"
-                      >
-                        <span className="font-medium text-gray-700 group-hover:text-purple-700">{sub.name}</span>
-                        <button 
-                          onClick={() => handleDeleteClick('subcategory', sub)}
-                          className="p-1.5 hover:bg-red-100 rounded-lg transition-colors text-gray-400 hover:text-red-600"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </motion.div>
-                    ))}
-                    <button 
-                      onClick={() => handleAdd('subcategory')}
-                      className="flex items-center gap-1 px-4 py-2.5 border-2 border-dashed border-gray-300 hover:border-purple-400 rounded-xl text-gray-500 hover:text-purple-600 transition-colors"
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleEditRequest('subcategory', sub); }}
+                      className="p-1.5 text-gray-400 hover:text-purple-500 hover:bg-purple-50 rounded-lg opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
                     >
-                      <Plus size={16} />
-                      Add Sub Category
+                      <Pencil size={14} />
                     </button>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Brands */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
-              >
-                <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                    <Tag size={18} className="text-blue-500" />
-                    Brands
-                    <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full text-xs font-semibold">
-                      {selectedCategory.brands.length}
-                    </span>
-                  </h3>
-                  <button 
-                    onClick={() => handleAdd('brand')}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
-                  >
-                    <Plus size={14} />
-                    Add
-                  </button>
-                </div>
-                <div className="p-4">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {selectedCategory.brands.map((brand, index) => (
-                      <motion.div
-                        key={brand.id}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="group relative bg-gray-50 hover:bg-blue-50 rounded-xl p-4 text-center transition-colors"
-                      >
-                        <button 
-                          onClick={() => handleDeleteClick('brand', brand)}
-                          className="absolute top-2 right-2 p-1.5 hover:bg-red-100 rounded-lg transition-colors text-gray-400 hover:text-red-600"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                        <div className="w-12 h-12 bg-white group-hover:bg-blue-100 rounded-xl flex items-center justify-center text-2xl mx-auto mb-2 shadow-sm transition-colors">
-                          {brand.logo}
-                        </div>
-                        <span className="font-medium text-gray-700 group-hover:text-blue-700 text-sm">{brand.name}</span>
-                      </motion.div>
-                    ))}
-                    <button 
-                      onClick={() => handleAdd('brand')}
-                      className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl text-gray-500 hover:text-blue-600 transition-colors min-h-[100px]"
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteRequest('subcategory', sub); handleSubCategoryClick(sub._id)}}
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
                     >
-                      <Plus size={20} />
-                      <span className="text-sm font-medium">Add Brand</span>
+                      <Trash2 size={14} />
                     </button>
+                    <ChevronRight size={16} className={`text-gray-400 ${selectedSubCategory?._id === sub._id ? 'text-purple-500' : ''}`} />
                   </div>
                 </div>
-              </motion.div>
-            </>
-          )}
+              ))
+            )}
+          </div>
         </div>
+
+        {/* Column 3: Brands */}
+        <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden transition-opacity duration-200 ${!selectedSubCategory ? 'opacity-50 pointer-events-none' : ''
+          } ${activeTab === 'brand' ? 'block' : 'hidden lg:flex'}`}>
+          <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+            <h2 className="font-bold text-gray-900 flex items-center gap-2">
+              <Tag size={18} className="text-blue-500" />
+              Brands
+            </h2>
+            <button
+              onClick={() => openAddModal('brand')}
+              className="p-1.5 bg-white border border-gray-200 hover:border-blue-500 hover:text-blue-500 rounded-lg transition-colors shadow-sm"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            {!selectedSubCategory ? (
+              <div className="text-center py-10 text-gray-400 text-sm">Select a subcategory first</div>
+            ) : filteredBrands.length === 0 ? (
+              <div className="text-center py-10 text-gray-400 text-sm">No brands found</div>
+            ) : (
+              filteredBrands.map(brand => (
+                <div
+                onClick={()=>setSelectedBrand(brand._id)}
+                  key={brand._id}
+                  className="p-3 rounded-xl bg-white border border-gray-100 flex justify-between items-center group hover:border-blue-200 hover:shadow-sm transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center font-bold text-xs uppercase">
+                      {brand.name ? brand.name.substring(0, 1) : 'B'}
+                    </div>
+                    <span className="font-medium text-gray-700 capitalize">{brand.name}</span>
+                  </div>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => {handleEditRequest('brand', brand); setSelectedBrand(brand._id) }}
+                      className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRequest('brand', brand)}
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
       </div>
 
-      {/* Add/Edit Modal */}
+      {/* Add Modal */}
       <AnimatePresence>
         {showModal && (
           <>
@@ -308,89 +386,57 @@ const AdminCategories = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md bg-white rounded-2xl shadow-2xl z-50 overflow-hidden"
+              className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-xs bg-white rounded-2xl shadow-2xl z-50 overflow-hidden"
             >
-              <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">
-                    Add New {modalType === 'category' ? 'Category' : modalType === 'brand' ? 'Brand' : 'Sub Category'}
-                  </h2>
-                  {modalType !== 'category' && (
-                    <p className="text-sm text-gray-500 mt-0.5">For: {selectedCategory?.name}</p>
-                  )}
-                </div>
-                <button 
+              <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-gray-900 capitalize">
+                  {modalMode === 'edit' ? 'Edit ' : 'Add New '}
+                  {modalType === 'subcategory' ? 'Sub Category' : modalType}
+                </h2>
+                <button
                   onClick={() => setShowModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <X size={20} />
+                  <X size={18} />
                 </button>
               </div>
-
-              <div className="p-6 space-y-5">
-                {/* Category Form */}
-                {modalType === 'category' && (
-                  <div>
-                    <label className="text-sm font-semibold text-gray-900 block mb-2">Category Name</label>
-                    <input 
-                      type="text" 
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                      placeholder="e.g., Mobile"
-                    />
-                  </div>
-                )}
-
-                {/* Brand Form */}
-                {modalType === 'brand' && (
-                  <>
-                    <div>
-                      <label className="text-sm font-semibold text-gray-900 block mb-2">Brand Name</label>
-                      <input 
-                        type="text" 
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                        placeholder="e.g., Apple"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-semibold text-gray-900 block mb-2">Brand Logo</label>
-                      <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-blue-300 transition-colors cursor-pointer bg-gray-50 hover:bg-blue-50 group">
-                        <div className="w-14 h-14 bg-gray-200 group-hover:bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2 transition-colors">
-                          <Plus size={24} className="text-gray-400 group-hover:text-blue-500" />
-                        </div>
-                        <p className="text-sm text-gray-500 group-hover:text-blue-600">Click to upload logo</p>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Sub Category Form */}
+              <div className="p-5">
+                {/* Context Info */}
                 {modalType === 'subcategory' && (
-                  <div>
-                    <label className="text-sm font-semibold text-gray-900 block mb-2">Sub Category Name</label>
-                    <input 
-                      type="text" 
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                      placeholder="e.g., Smartphone"
-                    />
+                  <div className="mb-4 text-sm text-gray-500 bg-gray-50 p-3 rounded-xl">
+                    Adding to Category:<span className="font-semibold text-gray-900">{categories.find(cat => cat._id === selectedCategory)?.name} </span>
                   </div>
                 )}
-              </div>
+                {modalType === 'brand' && (
+                  <div className="mb-4 text-sm text-gray-500 bg-gray-50 p-3 rounded-xl">
+                    Adding to: <span className="font-semibold text-gray-900">{categories.find(cat => cat._id === selectedCategory)?.name} &gt; {subCategories.find(sub => sub._id === selectedSubCategory)?.name}</span>
+                  </div>
+                )}
 
-              <div className="p-6 border-t border-gray-100 flex gap-3 bg-gray-50">
-                <button 
+                <label className="block text-sm font-semibold text-gray-900 mb-2">Name</label>
+                <input
+                  type="text"
+                  autoFocus
+                  value={newItemName}
+                  onChange={(e) => setNewItemName(e.target.value)}
+                  placeholder={`Enter ${modalType} name`}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveItem()}
+                />
+              </div>
+              <div className="p-5 border-t border-gray-100 flex gap-3">
+                <button
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-3 bg-white hover:bg-gray-100 text-gray-700 rounded-xl font-medium transition-colors border border-gray-200"
+                  className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
                 >
                   Cancel
                 </button>
-                <button className={`flex-1 px-4 py-3 text-white rounded-xl font-medium transition-all shadow-lg ${
-                  modalType === 'brand' 
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-blue-500/20'
-                    : modalType === 'subcategory'
-                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-purple-500/20'
-                    : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-orange-500/20'
-                }`}>
-                  Create
+                <button
+                  onClick={handleSaveItem}
+                  disabled={!newItemName.trim()}
+                  className="flex-1 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors shadow-lg shadow-orange-500/20"
+                >
+                  {modalMode === 'edit' ? 'Update' : 'Create'}
                 </button>
               </div>
             </motion.div>
@@ -398,7 +444,7 @@ const AdminCategories = () => {
         )}
       </AnimatePresence>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Modal */}
       <AnimatePresence>
         {showDeleteModal && (
           <>
@@ -413,26 +459,29 @@ const AdminCategories = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-sm bg-white rounded-2xl shadow-2xl z-50 overflow-hidden"
+              className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-xs bg-white rounded-2xl shadow-2xl z-50 overflow-hidden"
             >
-              <div className="p-6 text-center">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertTriangle size={32} className="text-red-600" />
+              <div className="p-5 text-center">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertTriangle size={24} className="text-red-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Delete {deleteType}?</h3>
-                <p className="text-gray-500 mb-6">
-                  Are you sure you want to delete <span className="font-semibold text-gray-700">"{deleteItem?.name}"</span>? This action cannot be undone.
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Delete {deleteType}?</h3>
+                <p className="text-gray-500 mb-6 text-sm">
+                  Are you sure you want to delete <span className="font-semibold text-gray-900">"{itemToDelete?.name}"</span>?
+                  {deleteType !== 'brand' && (
+                    <span className="block mt-1 text-red-500 text-xs">This will typically delete all nested items inside it.</span>
+                  )}
                 </p>
                 <div className="flex gap-3">
-                  <button 
+                  <button
                     onClick={() => setShowDeleteModal(false)}
-                    className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+                    className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
                   >
                     Cancel
                   </button>
-                  <button 
+                  <button
                     onClick={confirmDelete}
-                    className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors shadow-lg shadow-red-500/20"
+                    className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors shadow-lg shadow-red-500/20"
                   >
                     Delete
                   </button>
@@ -442,6 +491,9 @@ const AdminCategories = () => {
           </>
         )}
       </AnimatePresence>
+
+
+
     </div>
   )
 }
