@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { User, MapPin, Package, LogOut, Edit2 } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 
 const Profile = () => {
-    const [activeTab, setActiveTab] = useState('info') // 'info', 'addresses'
+
 
     const containerVariants = {
         hidden: { opacity: 0 },

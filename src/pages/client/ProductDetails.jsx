@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ShoppingCart, Check, Star, Minus, Plus, ArrowLeft, Sparkles } from 'lucide-react'
@@ -9,14 +9,21 @@ import { AnimatePresence } from 'framer-motion'
 
 const ProductDetails = () => {
     const { id } = useParams()
-    const [product, setProduct] = useState(null)
     const [quantity, setQuantity] = useState(1)
     const [activeTab, setActiveTab] = useState('description')
-    const [relatedProducts, setRelatedProducts] = useState([])
     const [isHovered, setIsHovered] = useState(false)
     const [selectedImage, setSelectedImage] = useState(null)
     const [isAddedToCart, setIsAddedToCart] = useState(false)
     const [cartParticles, setCartParticles] = useState([])
+
+    const product = useMemo(() => ProductsData.find(p => p.id === parseInt(id)), [id])
+
+    const relatedProducts = useMemo(() => {
+        if (!product) return []
+        return ProductsData.filter(p => 
+            p.category === product.category && p.id !== product.id
+        ).slice(0, 4)
+    }, [product])
 
     const handleAddToCart = () => {
         // Create burst particles
@@ -34,18 +41,9 @@ const ProductDetails = () => {
     }
 
     useEffect(() => {
-        const foundProduct = ProductsData.find(p => p.id === parseInt(id))
-        setProduct(foundProduct)
         setQuantity(1)
         window.scrollTo(0, 0)
-
-        if (foundProduct) {
-            setSelectedImage(foundProduct.images ? foundProduct.images[0] : foundProduct.image)
-            const related = ProductsData.filter(p => 
-                p.category === foundProduct.category && p.id !== foundProduct.id
-            ).slice(0, 4)
-            setRelatedProducts(related)
-        }
+        setSelectedImage(null) 
     }, [id])
 
     if (!product) {
@@ -77,7 +75,7 @@ const ProductDetails = () => {
                         <div className="p-4 lg:p-8 flex flex-col items-center justify-center relative">
                             <motion.img 
                                 key={selectedImage}
-                                src={selectedImage || product.image} 
+                                src={selectedImage || (product.images && product.images[0] ? product.images[0] : product.image)} 
                                 alt={product.name} 
                                 className="w-full max-w-lg aspect-square object-contain cursor-zoom-in"
                                 onHoverStart={() => setIsHovered(true)}

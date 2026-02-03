@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, SlidersHorizontal, X, ChevronDown, ChevronUp, RotateCcw, Check } from 'lucide-react'
 import Cards from '../../common/Cards'
@@ -35,7 +35,7 @@ const FilterSection = ({ title, isOpen, toggle, children }) => {
 }
 
 const Products = () => {
-  const [filteredProducts, setFilteredProducts] = useState(ProductsData)
+  // const [filteredProducts, setFilteredProducts] = useState(ProductsData)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategories, setSelectedCategories] = useState([])
   const [selectedSubCategories, setSelectedSubCategories] = useState([])
@@ -74,11 +74,9 @@ const Products = () => {
     return acc
   }, {})
 
-  const getCategoryCount = (cat) => ProductsData.filter(p => p.category === cat).length
-  const getSubCategoryCount = (sub) => ProductsData.filter(p => p.subCategory === sub).length
   const getBrandCount = (brand) => ProductsData.filter(p => p.brand === brand).length
 
-  useEffect(() => {
+  const filteredProducts = useMemo(() => {
     let result = [...ProductsData]
 
     // Filter by Search
@@ -119,7 +117,7 @@ const Products = () => {
       result.sort((a, b) => b.offerPrice - a.offerPrice)
     }
 
-    setFilteredProducts(result)
+    return result
   }, [searchQuery, selectedCategories, selectedSubCategories, selectedBrands, priceRange, sortBy])
 
   const toggleCategory = (cat) => {

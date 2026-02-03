@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { CheckCircle, CreditCard, Truck, AlertCircle, ArrowLeft, ShieldCheck } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 
 const Checkout = () => {
-    const navigate = useNavigate()
     const [step, setStep] = useState(1) // 1: Shipping, 2: Payment, 3: Success
     const [loading, setLoading] = useState(false)
 

@@ -52,14 +52,16 @@ const AdminCategories = () => {
     const filteredBrand = brands.filter(brand => brand.SubCategory === selectedSubCategory)
     setFilteredBrand(filteredBrand)
   }
+
   useEffect(() => {
     filterSubCat()
   }, [selectedCategory])
-
   useEffect(() => {
     filterBrand()
   }, [selectedSubCategory])
-
+  useEffect(() => {
+    refreshCSB()
+  }, [refreshCSB])
 
 
   // --- Handling Selection ---
@@ -76,6 +78,9 @@ const AdminCategories = () => {
     setSelectedSubCategory(subCategory);
     setActiveTab('brand');
   };
+  const handleBrandClick = (brand) => {
+    setSelectedBrand(brand);
+  }
 
   // --- Handling Modals ---
   const openAddModal = (type) => {
@@ -87,7 +92,6 @@ const AdminCategories = () => {
   };
 
   const handleEditRequest = (type, item) => {
-    console.log("Edit Request:", type, item);
     setModalType(type);
     setNewItemName(item.name);
     setModalMode('edit');
@@ -131,7 +135,7 @@ const AdminCategories = () => {
       if (modalType === 'subcategory') url = '/edit-subcategory';
       if (modalType === 'subcategory') body.subCategoryID = selectedSubCategory;
       if (modalType === 'brand') url = '/edit-brand';
-      if (modalType === 'brand') ; body.brandID = selectedBrand;
+      if (modalType === 'brand') body.brandID = selectedBrand;
       const response = await fetch(API_BASE + url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -297,13 +301,13 @@ const AdminCategories = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleEditRequest('subcategory', sub); }}
+                      onClick={(e) => { e.stopPropagation(); handleEditRequest('subcategory', sub); handleSubCategoryClick(sub._id) }}
                       className="p-1.5 text-gray-400 hover:text-purple-500 hover:bg-purple-50 rounded-lg opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
                     >
                       <Pencil size={14} />
                     </button>
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleDeleteRequest('subcategory', sub); handleSubCategoryClick(sub._id)}}
+                      onClick={(e) => { e.stopPropagation(); handleDeleteRequest('subcategory', sub); }}
                       className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
                     >
                       <Trash2 size={14} />
@@ -339,7 +343,7 @@ const AdminCategories = () => {
             ) : (
               filteredBrands.map(brand => (
                 <div
-                onClick={()=>setSelectedBrand(brand._id)}
+                  onClick={() => setSelectedBrand(brand._id)}
                   key={brand._id}
                   className="p-3 rounded-xl bg-white border border-gray-100 flex justify-between items-center group hover:border-blue-200 hover:shadow-sm transition-all"
                 >
@@ -351,7 +355,7 @@ const AdminCategories = () => {
                   </div>
                   <div className="flex gap-1">
                     <button
-                      onClick={() => {handleEditRequest('brand', brand); setSelectedBrand(brand._id) }}
+                      onClick={() => { handleEditRequest('brand', brand); handleBrandClick(brand._id) }}
                       className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
                     >
                       <Pencil size={14} />
