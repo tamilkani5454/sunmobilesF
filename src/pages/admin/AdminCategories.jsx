@@ -15,7 +15,7 @@ import {
 import { appContext } from '../../context/Context'
 
 const AdminCategories = () => {
-  const { CSB, refreshCSB } = useContext(appContext)
+  const { CSB, refreshCSB, loading } = useContext(appContext)
 
   // Local state for UI selection
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -44,7 +44,6 @@ const AdminCategories = () => {
 
   // --- Filter Logic ---
   const filterSubCat = () => {
-    console.log(selectedCategory)
     const filteredSubCategories = subCategories.filter(sub => sub.Category === selectedCategory)
     setFilteredSubCategories(filteredSubCategories)
   }
@@ -60,7 +59,10 @@ const AdminCategories = () => {
     filterBrand()
   }, [selectedSubCategory])
   useEffect(() => {
-    refreshCSB()
+    if(CSB===null || CSB===undefined){
+      refreshCSB()
+    }
+    
   }, [refreshCSB])
 
 
@@ -100,7 +102,6 @@ const AdminCategories = () => {
   };
 
   const handleDeleteRequest = (type, item) => {
-    console.log("Delete Request:", type, item);
     setDeleteType(type);
     setItemToDelete(item);
     setShowDeleteModal(true);
@@ -156,7 +157,6 @@ const AdminCategories = () => {
     if (deleteType === 'brand') url = `${API_BASE}/uploads/delete-brand/${itemToDelete._id}`;
 
     try {
-      console.log(`Deleting item at ${url}`);
       const response = await fetch(url, { method: 'DELETE' });
 
       if (response.ok) {
@@ -195,8 +195,14 @@ const AdminCategories = () => {
         </div>
       </div>
 
+      {loading && (
+        <div className="flex items-center justify-center h-full">
+             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+        </div>
+      )}
+
       {/* Mobile Tab Navigation */}
-      <div className="flex lg:hidden bg-gray-100 p-1 rounded-xl mb-4">
+      <div className={`flex lg:hidden bg-gray-100 p-1 rounded-xl mb-4 ${loading ? 'hidden' : ''}`}>
         {['category', 'subcategory', 'brand'].map((tab) => (
           <button
             key={tab}
@@ -212,7 +218,7 @@ const AdminCategories = () => {
       </div>
 
       {/* Main 3-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full pb-6">
+      <div className={`grid grid-cols-1 lg:grid-cols-3 gap-6 h-full pb-6 ${loading ? 'hidden' : ''}`}>
 
         {/* Column 1: Categories */}
         <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden ${activeTab === 'category' ? 'block' : 'hidden lg:flex'

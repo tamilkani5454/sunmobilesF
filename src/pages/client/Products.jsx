@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useContext } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, SlidersHorizontal, X, ChevronDown, ChevronUp, RotateCcw, Check } from 'lucide-react'
 import Cards from '../../common/Cards'
-import ProductsData from '../../assets/dummy'
 import { Button } from '../../components/ui/button'
 import BannerImg from '../../assets/products-banner.jpeg'
+import { appContext } from '../../context/Context'
 
 const FilterSection = ({ title, isOpen, toggle, children }) => {
   return (
@@ -35,8 +35,17 @@ const FilterSection = ({ title, isOpen, toggle, children }) => {
 }
 
 const Products = () => {
-  // const [filteredProducts, setFilteredProducts] = useState(ProductsData)
+  const { products, CSB, loading } = useContext(appContext)
+  const { categories = [], subCategories = [], brands = [] } = CSB || {}
   const [searchQuery, setSearchQuery] = useState('')
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    )
+  }
   const [selectedCategories, setSelectedCategories] = useState([])
   const [selectedSubCategories, setSelectedSubCategories] = useState([])
   const [priceRange, setPriceRange] = useState([0, 50000])
@@ -53,31 +62,54 @@ const Products = () => {
 
   // Extract unique categories and brands
   // Extract unique categories
-  const categories = [...new Set(ProductsData.map(p => p.category))]
+  // No need to extract unique categories/brands from products anymore, use CSB
   
-  // Extract brands based on selected categories
-  const brands = [...new Set(
-    ProductsData
-      .filter(p => selectedCategories.length === 0 || selectedCategories.includes(p.category))
-      .map(p => p.brand)
-  )]
+  // Helper to get name by ID
+  const getCategoryName = (id) => categories.find(c => c._id === id)?.name || id
+  const getSubCategoryName = (id) => subCategories.find(s => s._id === id)?.name || id
+  const getBrandName = (id) => brands.find(b => b._id === id)?.name || id
+
+  // Filter valid brands based on selected categories
+  // If no category selected, show all brands.
+  // If category selected, show brands that belong to subcategories of that category.
+  const availableBrands = useMemo(() => {
+     if (selectedCategories.length === 0) return brands;
+     
+     // Find subcategories for selected categories
+     const validSubCategoryIds = subCategories
+        .filter(sub => selectedCategories.includes(sub.Category))
+        .map(sub => sub._id);
+        
+     return brands.filter(brand => validSubCategoryIds.includes(brand.SubCategory));
+  }, [brands, subCategories, selectedCategories]);
+
+  // When categories change, clean up selected brands that are no longer valid
+  // (Optional: strict cleanup or keep specific brands selected to avoid annoyance)
+  useEffect(() => {
+     // If we want to clear brands that are no longer part of selected categories:
+     const validBrandIds = availableBrands.map(b => b._id);
+     setSelectedBrands(prev => prev.filter(b => validBrandIds.includes(b)));
+  }, [availableBrands]);
+
+
 
   // When categories change, clean up selected brands that are no longer valid
   useEffect(() => {
     setSelectedBrands(prev => prev.filter(b => brands.includes(b)))
   }, [selectedCategories])
 
-  // Build Hierarchy: { "Category": ["Sub1", "Sub2"] }
-  const categoryHierarchy = categories.reduce((acc, cat) => {
-    const subs = [...new Set(ProductsData.filter(p => p.category === cat).map(p => p.subCategory).filter(Boolean))]
-    acc[cat] = subs
-    return acc
-  }, {})
+  // Build Hierarchy: { "CategoryId": ["SubCategoryObject"] }
+  const categoryHierarchy = useMemo(() => {
+      return categories.reduce((acc, cat) => {
+        acc[cat._id] = subCategories.filter(sub => sub.Category === cat._id);
+        return acc;
+      }, {});
+  }, [categories, subCategories]);
 
-  const getBrandCount = (brand) => ProductsData.filter(p => p.brand === brand).length
+  const getBrandCount = (brandId) => products.filter(p => p.brand === brandId).length
 
   const filteredProducts = useMemo(() => {
-    let result = [...ProductsData]
+    let result = [...products]
 
     // Filter by Search
     if (searchQuery) {
@@ -118,7 +150,7 @@ const Products = () => {
     }
 
     return result
-  }, [searchQuery, selectedCategories, selectedSubCategories, selectedBrands, priceRange, sortBy])
+  }, [searchQuery, selectedCategories, selectedSubCategories, selectedBrands, priceRange, sortBy, products])
 
   const toggleCategory = (cat) => {
     // If clicking a main category in mobile "elegant" mode, we might just expand it
@@ -256,19 +288,19 @@ const Products = () => {
                     All Products
                  </div>
                 {categories.map(cat => (
-                  <div key={cat} className="flex flex-col">
+                  <div key={cat._id} className="flex flex-col">
                     <div 
-                        className={`flex justify-between items-center py-1.5 cursor-pointer group ${selectedCategories.includes(cat) || expandedCategory === cat ? 'text-orange-900' : 'text-gray-600'}`}
-                        onClick={() => setExpandedCategory(expandedCategory === cat ? null : cat)}
+                        className={`flex justify-between items-center py-1.5 cursor-pointer group ${selectedCategories.includes(cat._id) || expandedCategory === cat._id ? 'text-orange-900' : 'text-gray-600'}`}
+                        onClick={() => setExpandedCategory(expandedCategory === cat._id ? null : cat._id)}
                     >
-                        <span className={`text-sm group-hover:text-orange-600 transition-colors ${selectedCategories.includes(cat) ? 'font-medium' : ''}`}>{cat}</span>
-                         {categoryHierarchy[cat] && categoryHierarchy[cat].length > 0 && (
-                            <ChevronDown size={14} className={`text-gray-400 transform transition-transform ${expandedCategory === cat ? 'rotate-180' : ''}`}/>
+                        <span className={`text-sm group-hover:text-orange-600 transition-colors ${selectedCategories.includes(cat._id) ? 'font-medium' : ''}`}>{cat.name}</span>
+                         {categoryHierarchy[cat._id] && categoryHierarchy[cat._id].length > 0 && (
+                            <ChevronDown size={14} className={`text-gray-400 transform transition-transform ${expandedCategory === cat._id ? 'rotate-180' : ''}`}/>
                         )}
                     </div>
                     
                     <AnimatePresence>
-                        {expandedCategory === cat && (
+                        {expandedCategory === cat._id && (
                             <motion.div
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: 'auto', opacity: 1 }}
@@ -277,21 +309,22 @@ const Products = () => {
                             >
                                 <div className="pl-3 border-l border-gray-100 ml-1 space-y-1 my-1">
                                     <div 
-                                        className={`py-1 text-xs cursor-pointer ${selectedCategories.includes(cat) && selectedSubCategories.length === 0 ? 'text-orange-600 font-medium' : 'text-gray-500 hover:text-gray-800'}`}
+                                        className={`py-1 text-xs cursor-pointer ${selectedCategories.includes(cat._id) && selectedSubCategories.length === 0 ? 'text-orange-600 font-medium' : 'text-gray-500 hover:text-gray-800'}`}
                                         onClick={() => {
-                                            toggleCategory(cat)
-                                            setSelectedSubCategories(prev => prev.filter(s => !categoryHierarchy[cat].includes(s)))
+                                            toggleCategory(cat._id)
+                                            // Optional: Unselect subcategories of this category if needed, or keep them
+                                            // setSelectedSubCategories(prev => prev.filter(s => !categoryHierarchy[cat._id].some(sub => sub._id === s)))
                                         }}
                                     >
-                                        All {cat}
+                                        All {cat.name}
                                     </div>
-                                    {categoryHierarchy[cat].map(sub => (
+                                    {categoryHierarchy[cat._id] && categoryHierarchy[cat._id].map(sub => (
                                         <div 
-                                            key={sub}
-                                            className={`py-1 text-xs cursor-pointer ${selectedSubCategories.includes(sub) ? 'text-orange-600 font-medium' : 'text-gray-500 hover:text-gray-800'}`}
-                                            onClick={() => toggleSubCategory(sub)}
+                                            key={sub._id}
+                                            className={`py-1 text-xs cursor-pointer ${selectedSubCategories.includes(sub._id) ? 'text-orange-600 font-medium' : 'text-gray-500 hover:text-gray-800'}`}
+                                            onClick={() => toggleSubCategory(sub._id)}
                                         >
-                                            {sub}
+                                            {sub.name}
                                         </div>
                                     ))}
                                 </div>
@@ -348,21 +381,21 @@ const Products = () => {
               toggle={() => setOpenSections(prev => ({ ...prev, brand: !prev.brand }))}
             >
               <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                {brands.map(brand => (
-                  <label key={brand} className="flex items-center justify-between cursor-pointer group">
+                {availableBrands.map(brand => (
+                  <label key={brand._id} className="flex items-center justify-between cursor-pointer group">
                     <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${selectedBrands.includes(brand) ? 'bg-orange-500 border-orange-500' : 'border-gray-300 bg-white group-hover:border-orange-400'}`}>
-                        {selectedBrands.includes(brand) && <Check size={14} className="text-white" />}
+                      <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${selectedBrands.includes(brand._id) ? 'bg-orange-500 border-orange-500' : 'border-gray-300 bg-white group-hover:border-orange-400'}`}>
+                        {selectedBrands.includes(brand._id) && <Check size={14} className="text-white" />}
                       </div>
                       <input
                         type="checkbox"
                         className="hidden"
-                        checked={selectedBrands.includes(brand)}
-                        onChange={() => toggleBrand(brand)}
+                        checked={selectedBrands.includes(brand._id)}
+                        onChange={() => toggleBrand(brand._id)}
                       />
-                      <span className={`text-gray-600 group-hover:text-orange-600 transition-colors ${selectedBrands.includes(brand) ? 'font-medium text-gray-900' : ''}`}>{brand}</span>
+                      <span className={`text-gray-600 group-hover:text-orange-600 transition-colors ${selectedBrands.includes(brand._id) ? 'font-medium text-gray-900' : ''}`}>{brand.name}</span>
                     </div>
-                    <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{getBrandCount(brand)}</span>
+                    <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{getBrandCount(brand._id)}</span>
                   </label>
                 ))}
               </div>
@@ -494,23 +527,23 @@ const Products = () => {
                                     </div>
 
                                     {categories.map(cat => (
-                                        <div key={cat} className="flex flex-col">
+                                        <div key={cat._id} className="flex flex-col">
                                             <div 
-                                                className={`flex justify-between items-center py-2 cursor-pointer ${selectedCategories.includes(cat) || expandedCategory === cat ? 'text-orange-900 font-medium' : 'text-gray-600'}`}
+                                                className={`flex justify-between items-center py-2 cursor-pointer ${selectedCategories.includes(cat._id) || expandedCategory === cat._id ? 'text-orange-900 font-medium' : 'text-gray-600'}`}
                                                 onClick={() => {
                                                     // Toggle Expand
-                                                    setExpandedCategory(expandedCategory === cat ? null : cat)
+                                                    setExpandedCategory(expandedCategory === cat._id ? null : cat._id)
                                                 }}
                                             >
-                                                <span className="text-lg">{cat}</span>
-                                                {categoryHierarchy[cat] && categoryHierarchy[cat].length > 0 && (
-                                                    <ChevronDown size={16} className={`transform transition-transform ${expandedCategory === cat ? 'rotate-180' : ''}`}/>
+                                                <span className="text-lg">{cat.name}</span>
+                                                {categoryHierarchy[cat._id] && categoryHierarchy[cat._id].length > 0 && (
+                                                    <ChevronDown size={16} className={`transform transition-transform ${expandedCategory === cat._id ? 'rotate-180' : ''}`}/>
                                                 )}
                                             </div>
                                             
                                             {/* Sub Categories */}
                                             <AnimatePresence>
-                                                {expandedCategory === cat && (
+                                                {expandedCategory === cat._id && (
                                                     <motion.div
                                                         initial={{ height: 0, opacity: 0 }}
                                                         animate={{ height: 'auto', opacity: 1 }}
@@ -519,21 +552,21 @@ const Products = () => {
                                                     >
                                                         <div className="pl-4 border-l-2 border-gray-100 ml-1 space-y-2 mb-2">
                                                             <div 
-                                                                className={`py-1 text-sm cursor-pointer ${selectedCategories.includes(cat) && selectedSubCategories.length === 0 ? 'text-orange-700 font-medium pl-2 border-l-2 border-orange-700 -ml-4.5' : 'text-gray-500 hover:text-gray-800'}`}
+                                                                className={`py-1 text-sm cursor-pointer ${selectedCategories.includes(cat._id) && selectedSubCategories.length === 0 ? 'text-orange-700 font-medium pl-2 border-l-2 border-orange-700 -ml-4.5' : 'text-gray-500 hover:text-gray-800'}`}
                                                                 onClick={() => {
-                                                                    toggleCategory(cat)
-                                                                    setSelectedSubCategories(prev => prev.filter(s => !categoryHierarchy[cat].includes(s)))
+                                                                    toggleCategory(cat._id)
+                                                                    // Optional: Logic for subcategories cleanup
                                                                 }}
                                                             >
-                                                                All {cat}
+                                                                All {cat.name}
                                                             </div>
-                                                            {categoryHierarchy[cat].map(sub => (
+                                                            {categoryHierarchy[cat._id] && categoryHierarchy[cat._id].map(sub => (
                                                                 <div 
-                                                                    key={sub}
-                                                                    className={`py-1 text-sm cursor-pointer ${selectedSubCategories.includes(sub) ? 'text-orange-700 font-medium pl-2 border-l-2 border-orange-700 -ml-4.5' : 'text-gray-500 hover:text-gray-800'}`}
-                                                                    onClick={() => toggleSubCategory(sub)}
+                                                                    key={sub._id}
+                                                                    className={`py-1 text-sm cursor-pointer ${selectedSubCategories.includes(sub._id) ? 'text-orange-700 font-medium pl-2 border-l-2 border-orange-700 -ml-4.5' : 'text-gray-500 hover:text-gray-800'}`}
+                                                                    onClick={() => toggleSubCategory(sub._id)}
                                                                 >
-                                                                    {sub}
+                                                                    {sub.name}
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -601,14 +634,14 @@ const Products = () => {
                                 className="overflow-hidden"
                             >
                                 <div className="flex flex-col space-y-2 pt-2">
-                                  {brands.map(brand => (
+                                  {availableBrands.map(brand => (
                                     <div 
-                                        key={brand} 
-                                        className={`flex justify-between items-center py-1 cursor-pointer ${selectedBrands.includes(brand) ? 'text-orange-900 font-medium' : 'text-gray-500'}`}
-                                        onClick={() => toggleBrand(brand)}
+                                        key={brand._id} 
+                                        className={`flex justify-between items-center py-1 cursor-pointer ${selectedBrands.includes(brand._id) ? 'text-orange-900 font-medium' : 'text-gray-500'}`}
+                                        onClick={() => toggleBrand(brand._id)}
                                     >
-                                        <span className="text-lg">{brand}</span>
-                                        {selectedBrands.includes(brand) && <Check size={18} />}
+                                        <span className="text-lg">{brand.name}</span>
+                                        {selectedBrands.includes(brand._id) && <Check size={18} />}
                                     </div>
                                   ))}
                                 </div>

@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useContext } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ShoppingCart, Check, Star, Minus, Plus, ArrowLeft, Sparkles } from 'lucide-react'
 import { Button } from '../../components/ui/button'
-import ProductsData from '../../assets/dummy'
+import { appContext } from '../../context/Context'
 import Cards from '../../common/Cards'
 import { AnimatePresence } from 'framer-motion'
 
 const ProductDetails = () => {
     const { id } = useParams()
+    const { products, CSB, addToCart, loading } = useContext(appContext)
+    const { brands = [], categories = [] } = CSB || {}
     const [quantity, setQuantity] = useState(1)
     const [activeTab, setActiveTab] = useState('description')
     const [isHovered, setIsHovered] = useState(false)
@@ -16,16 +18,27 @@ const ProductDetails = () => {
     const [isAddedToCart, setIsAddedToCart] = useState(false)
     const [cartParticles, setCartParticles] = useState([])
 
-    const product = useMemo(() => ProductsData.find(p => p.id === parseInt(id)), [id])
+    const product = products.find((p) => p._id == id)
+    
+    const getBrandName = (id) => {
+        const brand = brands.find(b => b._id === id)
+        return brand ? brand.name : id
+    }
 
+    const getCategoryName = (id) => {
+        const category = categories.find(c => c._id === id)
+        return category ? category.name : id
+    }
     const relatedProducts = useMemo(() => {
         if (!product) return []
-        return ProductsData.filter(p => 
+        return products.filter(p => 
             p.category === product.category && p.id !== product.id
         ).slice(0, 4)
-    }, [product])
+    }, [product, products])
 
     const handleAddToCart = () => {
+        addToCart(product, quantity)
+        
         // Create burst particles
         const newParticles = Array.from({ length: 12 }, (_, i) => ({
             id: Date.now() + i,
@@ -46,7 +59,7 @@ const ProductDetails = () => {
         setSelectedImage(null) 
     }, [id])
 
-    if (!product) {
+    if (loading || !product) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
@@ -75,7 +88,7 @@ const ProductDetails = () => {
                         <div className="p-4 lg:p-8 flex flex-col items-center justify-center relative">
                             <motion.img 
                                 key={selectedImage}
-                                src={selectedImage || (product.images && product.images[0] ? product.images[0] : product.image)} 
+                                src={selectedImage || (product.images && product.images[0].url ? product.images[0].url : product.name)} 
                                 alt={product.name} 
                                 className="w-full max-w-lg aspect-square object-contain cursor-zoom-in"
                                 onHoverStart={() => setIsHovered(true)}
@@ -91,10 +104,11 @@ const ProductDetails = () => {
                                     {product.images.map((img, idx) => (
                                         <button 
                                             key={idx}
-                                            onClick={() => setSelectedImage(img)}
+                                            onClick={() => {
+                                                setSelectedImage(img.url)}}
                                             className={`w-14 h-14 shrink-0 rounded-lg border-2 overflow-hidden transition-all p-1 ${selectedImage === img ? 'border-orange-500 scale-105' : 'border-gray-200 hover:border-orange-300'}`}
                                         >
-                                            <img src={img} alt="" className="w-full h-full object-contain" />
+                                            <img src={img.url} alt="" className="w-full h-full object-contain" />
                                         </button>
                                     ))}
                                 </div>
@@ -117,7 +131,7 @@ const ProductDetails = () => {
                                 <div className="space-y-6">
                                     <div>
                                         <div className="flex items-center gap-2 mb-3">
-                                            <span className="text-sm font-bold tracking-wider text-orange-600 uppercase bg-orange-50 px-3 py-1 rounded-full">{product.brand}</span>
+                                            <span className="text-sm font-bold tracking-wider text-orange-600 uppercase bg-orange-50 px-3 py-1 rounded-full">{getBrandName(product.brand)}</span>
                                             <div className="flex items-center text-yellow-400 gap-1 ml-auto bg-yellow-50 px-3 py-1 rounded-full">
                                                 <Star size={14} fill="currentColor" />
                                                 <span className="text-yellow-700 text-sm font-bold ml-1">4.8</span>

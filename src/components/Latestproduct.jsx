@@ -3,13 +3,15 @@ import { motion } from 'framer-motion'
 import { ShoppingCart } from 'lucide-react'
 import { Button } from './ui/button'
 import Cards from '../common/Cards'
-import Products from "../assets/dummy"
 import { Link } from 'react-router-dom'
+import { appContext } from '../context/Context'
+import { useContext } from 'react'
 
 
 
 const Latestproduct = () => {
-  const latestProducts = Products.slice(-8);
+  const { products, CSB } = useContext(appContext)
+  const latestProducts = products.slice(-8);
   
   return (
     <section className="py-20 px-4 md:px-8 bg-white">

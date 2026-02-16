@@ -1,33 +1,46 @@
-import React, { useState } from 'react'
+import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, ArrowLeft } from 'lucide-react'
 import { Button } from '../../components/ui/button'
-import ProductsData from '../../assets/dummy' // Importing dummy data for demo
+import { appContext } from '../../context/Context'
 
 const Cart = () => {
-    // Mocking initial cart state with first 2 products
-    const [cartItems, setCartItems] = useState([
-        { ...ProductsData[0], quantity: 1, selectedColor: 'Black' },
-        { ...ProductsData[2], quantity: 2, selectedColor: 'Blue' }
-    ])
+    const { cart, addToCart, removeFromCart, CSB, loading } = useContext(appContext)
+    const { brands = [], categories = [] } = CSB || {}
 
-    const updateQuantity = (id, newQuantity) => {
-        if (newQuantity < 1) return
-        setCartItems(cartItems.map(item => 
-            item.id === id ? { ...item, quantity: newQuantity } : item
-        ))
+    const getBrandName = (id) => {
+        const brand = brands.find(b => b._id === id)
+        return brand ? brand.name : id
+    }
+
+    const getCategoryName = (id) => {
+        const category = categories.find(c => c._id === id)
+        return category ? category.name : id
+    }
+
+    const updateQuantity = (item, delta) => {
+        if (item.quantity + delta < 1) return
+        addToCart(item, delta)
     }
 
     const removeItem = (id) => {
-        setCartItems(cartItems.filter(item => item.id !== id))
+        removeFromCart(id)
     }
 
-    const subtotal = cartItems.reduce((acc, item) => acc + (item.offerPrice * item.quantity), 0)
+    const subtotal = cart.reduce((acc, item) => acc + (item.offerPrice * item.quantity), 0)
     const shipping = subtotal > 500 ? 0 : 50
     const total = subtotal + shipping
 
-    if (cartItems.length === 0) {
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+            </div>
+        )
+    }
+
+    if (cart.length === 0) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
                 <motion.div 
@@ -55,16 +68,16 @@ const Cart = () => {
             <div className="container mx-auto px-4 max-w-6xl">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8 flex items-center gap-2 md:gap-3">
                     <ShoppingBag className="text-orange-500 w-6 h-6 md:w-8 md:h-8" /> Shopping Cart
-                    <span className="text-sm md:text-base font-normal text-gray-500 ml-2">({cartItems.length} items)</span>
+                    <span className="text-sm md:text-base font-normal text-gray-500 ml-2">({cart.length} items)</span>
                 </h1>
 
                 <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
                     {/* Cart Items List */}
                     <div className="lg:col-span-2 space-y-4">
                         <AnimatePresence>
-                            {cartItems.map((item) => (
+                            {cart.map((item) => (
                                 <motion.div 
-                                    key={item.id}
+                                    key={item._id}
                                     layout
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -73,30 +86,30 @@ const Cart = () => {
                                 >
                                     {/* Image */}
                                     <div className="w-20 h-20 sm:w-28 sm:h-28 bg-gray-50 rounded-xl shrink-0 p-2 border border-gray-100 self-center">
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
+                                        <img src={item.images && item.images[0] ? item.images[0].url : item.image} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
                                     </div>
 
                                     {/* details */}
                                     <div className="flex-1 min-w-0 flex flex-col justify-between">
                                         <div>
                                             <div className="flex justify-between items-start gap-2">
-                                                <Link to={`/products/${item.id}`} className="text-base sm:text-lg font-bold text-gray-900 hover:text-orange-600 transition-colors line-clamp-2 leading-snug">{item.name}</Link>
+                                                <Link to={`/products/${item._id}`} className="text-base sm:text-lg font-bold text-gray-900 hover:text-orange-600 transition-colors line-clamp-2 leading-snug">{item.name}</Link>
                                                 <button 
-                                                    onClick={() => removeItem(item.id)}
+                                                    onClick={() => removeItem(item._id)}
                                                     className="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50 shrink-0"
                                                     title="Remove item"
                                                 >
                                                     <Trash2 size={18} />
                                                 </button>
                                             </div>
-                                            <p className="text-xs sm:text-sm text-gray-500 mt-1">{item.brand} • {item.category}</p>
+                                            <p className="text-xs sm:text-sm text-gray-500 mt-1">{getBrandName(item.brand)} • {getCategoryName(item.category)}</p>
                                         </div>
 
                                         <div className="flex justify-between items-end mt-3">
                                             {/* Quantity Control */}
                                             <div className="flex items-center border border-gray-200 rounded-full bg-gray-50 h-8 sm:h-10">
                                                 <button 
-                                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                    onClick={() => updateQuantity(item, -1)}
                                                     className="px-2 sm:px-3 h-full hover:text-orange-600 transition-colors flex items-center justify-center"
                                                     disabled={item.quantity <= 1}
                                                 >
@@ -104,8 +117,9 @@ const Cart = () => {
                                                 </button>
                                                 <span className="w-6 sm:w-8 text-center font-medium text-sm">{item.quantity}</span>
                                                 <button 
-                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                    className="px-2 sm:px-3 h-full hover:text-orange-600 transition-colors flex items-center justify-center"
+                                                    onClick={() => updateQuantity(item, 1)}
+                                                    className="px-2 sm:px-3 h-full hover:text-orange-600 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    disabled={item.quantity >= item.stock}
                                                 >
                                                     <Plus size={14} />
                                                 </button>

@@ -1,16 +1,20 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
+import { appContext } from '../context/Context'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ShoppingCart, Check, Sparkles } from 'lucide-react'
 import { Button } from '../components/ui/button'
 
-const AddToCartButton = ({ productId }) => {
+const AddToCartButton = ({ product }) => {
+    const { addToCart } = useContext(appContext)
     const [isAdded, setIsAdded] = useState(false)
     const [particles, setParticles] = useState([])
 
     const handleAddToCart = (e) => {
         e.preventDefault()
         e.stopPropagation()
+        
+        addToCart(product, 1)
         
         // Create burst particles
         const newParticles = Array.from({ length: 8 }, (_, i) => ({
@@ -125,11 +129,19 @@ const AddToCartButton = ({ productId }) => {
 }
 
 const Cards = ({ products }) => {
+    const { CSB } = useContext(appContext)
+    const { categories = [] } = CSB || {}
+
+    const getCategoryName = (id) => {
+        const category = categories.find(c => c._id === id)
+        return category ? category.name : id
+    }
+
     return (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8">
             {products.map((product, index) => (
                 <motion.div
-                    key={product.id}
+                    key={product._id}
                     initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
@@ -137,19 +149,19 @@ const Cards = ({ products }) => {
                     whileHover={{ y: -5 }}
                     className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-100"
                 >
-                    <Link to={`/products/${product.id}`} className="block relative overflow-hidden aspect-square bg-gray-100">
+                    <Link to={`/products/${product._id}`} className="block relative overflow-hidden aspect-square bg-gray-100">
                         <img
-                            src={product.image}
+                            src={product.images[0].url}
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                             <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-600">
-                                {product.category}
+                                {getCategoryName(product.category)}
                             </div>
                     </Link>
 
                     <div className="p-3">
-                        <Link to={`/products/${product.id}`}>
+                        <Link to={`/products/${product._id}`}>
                             <h3 className="font-semibold md:text-lg text-gray-800 mb-2 truncate hover:text-orange-600 transition-colors">{product.name}</h3>
                         </Link>
                         <p className='text-gray-400 text-xs'>Avl Stock: <span className="font-semibold">{product.stock}</span></p>
@@ -159,7 +171,7 @@ const Cards = ({ products }) => {
                                 <span className="text-xl font-bold text-orange-600">₹{product.offerPrice}</span>
                             </div>
                             <p className='flex text-xs font-medium text-gray-600 text-center items-center'><Check size={13} />Free Delivery</p>
-                            <AddToCartButton productId={product.id} />
+                            <AddToCartButton product={product} />
                         </div>
                     </div>
                 </motion.div>

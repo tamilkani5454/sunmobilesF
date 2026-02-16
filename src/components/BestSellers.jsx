@@ -2,10 +2,13 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import Cards from '../common/Cards'
 import Products from "../assets/dummy"
+import { appContext } from '../context/Context'
+import { useContext } from 'react'
 
 const BestSellers = () => {
     // Filter active items and take top 4
-    const bestSellers = Products.filter(Item => Item.status ==="active").slice(0,4);
+    const { products, CSB } = useContext(appContext)
+    const bestSellers = products.filter(Item => Item.status ==="active").slice(0,4);
 
     return (
         <section className="py-20 px-4 md:px-8 bg-gray-50">

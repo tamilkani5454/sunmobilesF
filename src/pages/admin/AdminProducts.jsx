@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { categories, subCategories, brands } from '../../assets/dummy'
 import {
   Search,
   Plus,
@@ -17,11 +16,16 @@ import {
 import { Button } from '../../components/ui/button'
 import Products from '../../assets/dummy'
 import { form, pre } from 'framer-motion/client'
-
-
+import { appContext } from '../../context/Context'
+import Lottie from 'lottie-react'
+import trail from "../../assets/Trailloading.json"
 const productsData = Products
 
+
+
+
 const AdminProducts = () => {
+  const { CSB, refreshCSB, products, loading: contextLoading } = useContext(appContext);
   const maxImages = 4;
   const [searchQuery, setSearchQuery] = useState('')
   const [showModal, setShowModal] = useState(false)
@@ -30,7 +34,15 @@ const AdminProducts = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteProduct, setDeleteProduct] = useState(null)
   const [imageFiles, setImageFiles] = useState(Array(maxImages).fill(null))
-
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
+  const [selectedBrand, setSelectedBrand] = useState(null);
+  const [filteredSubCategories, setFilteredSubCategories] = useState([]);
+  const [filteredBrands, setFilteredBrands] = useState([]);
+  const categories = CSB?.categories || [];
+  const subCategories = CSB?.subCategories || [];
+  const brands = CSB?.brands || [];
+  const [loading, setLoading] = useState(false)
   const [productDetails, setProductDetails] = useState({
     name: "",
     category: "",
@@ -44,6 +56,7 @@ const AdminProducts = () => {
     specifications: ["", "", "", "", "", ""],
   })
   const [editProductDetails, setEditProductDetails] = useState({
+    _id: "",
     name: "",
     category: "",
     subCategory: "",
@@ -53,33 +66,61 @@ const AdminProducts = () => {
     stock: "",
     status: "",
     description: "",
-    specifications1: "",
-    specifications2: "",
-    specifications3: "",
-    specifications4: "",
-    specifications5: "",
-    specifications6: "",
+    specifications: ["", "", "", "", "", ""],
   })
+  useEffect(() => {
+
+    filterSubCat()
+  }, [selectedCategory])
+  useEffect(() => {
+    filterBrand()
+  }, [selectedSubCategory])
+  useEffect(() => {
+  }, [editProductDetails])
+  const filterSubCat = () => {
+
+    const filteredSubCategories = subCategories.filter(sub => sub.Category === selectedCategory)
+
+    setFilteredSubCategories(filteredSubCategories)
+  }
+  const filterBrand = () => {
+    const filteredBrand = brands.filter(brand => brand.SubCategory === selectedSubCategory)
+    setFilteredBrands(filteredBrand)
+  }
+
   const specs = [
     {
-      div: 3,
       subDiv: ["SPEC 1", "SPEC 2", "SPEC 3", "SPEC 4", "SPEC 5", "SPEC 6"]
     }
   ]
   const handleEditProducts = (product) => {
+
     setShowModalEdit(true)
-    setEditingProduct(product)
-    console.log(editingProduct)
+    setEditProductDetails({
+      _id: product._id || "",
+      name: product.name || "",
+      category: product.category || "",
+      subCategory: product.subCategory || "",
+      brand: product.brand || "",
+      price: product.price || "",
+      offerPrice: product.offerPrice || "",
+      stock: product.stock || "",
+      status: product.status || "",
+      description: product.description || "",
+      specifications: product.specifications || ["", "", "", ""]
+    })
+
   }
 
-  const filteredProducts = productsData.filter(product =>
+  const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.category.toLowerCase().includes(searchQuery.toLowerCase())
   )
-
+  const showCat = Object.fromEntries(
+    categories.map((cat) => [cat._id, cat.name])
+  )
   const sendProduct = async () => {
-    console.log('Sending product:', productDetails);
-    if (!productDetails.name || !productDetails.category || !productDetails.description || !productDetails.specifications[0] || !productDetails.specifications[1] || !productDetails.specifications[2] || !productDetails.specifications[3] || !productDetails.specifications[4] || !productDetails.specifications[5] ||   !productDetails.subCategory || !productDetails.brand || !productDetails.price || !productDetails.stock || !productDetails.status || imageFiles[0] === null) {
+    if (!productDetails.name || !productDetails.category || !productDetails.description || !productDetails.specifications[0] || !productDetails.specifications[1] || !productDetails.specifications[2] || !productDetails.subCategory || !productDetails.brand || !productDetails.price || !productDetails.stock || !productDetails.status || imageFiles[0] === null) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -103,13 +144,21 @@ const AdminProducts = () => {
       body: formdata
     });
   };
+  const sendEditProducts = async () => {
+    const res = await fetch("http://localhost:3000/api/update/edit-products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editProductDetails)
+    })
+
+  }
 
   const handleAddProduct = () => {
     setEditingProduct(null)
     // setProductImages(Array(4).fill(null))
     setShowModal(true)
   }
-  const addProductSpecs = ({subIndex,e}) => {
+  const addProductSpecs = ({ subIndex, e }) => {
     const updatedSpecs = [...productDetails.specifications];
     updatedSpecs[subIndex] = e.target.value;
 
@@ -117,7 +166,7 @@ const AdminProducts = () => {
       ...productDetails,
       specifications: updatedSpecs,
     });
-    
+
   }
 
   const handleDeleteClick = (product) => {
@@ -125,11 +174,12 @@ const AdminProducts = () => {
     setShowDeleteModal(true)
   }
 
-  const confirmDelete = () => {
-    // Add your delete logic here
-    console.log('Deleting product:', deleteProduct)
-    setShowDeleteModal(false)
-    setDeleteProduct(null)
+  const confirmDelete = async() => {
+    const res = await fetch("http://localhost:3000/api/update/delete-products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({id:deleteProduct})
+    })
   }
 
   const handleImageUpload = (index, e) => {
@@ -151,7 +201,12 @@ const AdminProducts = () => {
     updatedFiles[index] = null;
     setImageFiles(updatedFiles)
   }
-
+  if (loading || contextLoading)
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <Lottie animationData={trail} className='w-100 h-100' />
+      </div>
+    )
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -207,16 +262,16 @@ const AdminProducts = () => {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={product._id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       {/* <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-2xl">
                         {product.image}
                       </div> */}
-                      <span className="font-medium text-gray-900">{product.name}</span>
+                      <span className="font-medium text-gray-900 capitalize">{product.name}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-600 hidden md:table-cell">{product.category}</td>
+                  <td className="px-6 py-4 text-gray-600 hidden md:table-cell capitalize">{showCat[product.category]}</td>
                   <td className="px-6 py-4 font-semibold text-gray-900">₹{product.price.toLocaleString()}</td>
                   <td className="px-6 py-4">
                     <span className={`font-medium ${product.stock < 10 ? 'text-red-600' : 'text-gray-900'}`}>
@@ -234,13 +289,19 @@ const AdminProducts = () => {
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => handleEditProducts(product)}
+                        onClick={() => {
+                          handleEditProducts(product)
+                          setSelectedCategory(product.category)
+                          setSelectedSubCategory(product.subCategory)
+                          setSelectedBrand(product.brand)
+
+                        }}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-700"
                       >
                         <Pencil size={16} />
                       </button>
                       <button
-                        onClick={() => handleDeleteClick(product)}
+                        onClick={() => handleDeleteClick(product._id)}
                         className="p-2 hover:bg-red-50 rounded-lg transition-colors text-gray-500 hover:text-red-600"
                       >
                         <Trash2 size={16} />
@@ -354,12 +415,15 @@ const AdminProducts = () => {
                     <label className="text-sm font-semibold text-gray-900 block mb-2">Category</label>
                     <select
                       value={productDetails.category}
-                      onChange={(e) => setProductDetails({ ...productDetails, category: e.target.value })}
+                      onChange={(e) => {
+                        setProductDetails({ ...productDetails, category: e.target.value });
+                        setSelectedCategory(e.target.value)
+                      }}
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                     >
                       <option value="null">Select category</option>
                       {categories.map((cat) => (
-                        <option key={cat._id} value={cat._id}>
+                        <option key={cat._id} value={cat._id} >
                           {cat.name}
                         </option>
                       ))}
@@ -370,11 +434,14 @@ const AdminProducts = () => {
                     <select
                       value={productDetails.subCategory}
                       disabled={!productDetails.category}
-                      onChange={(e) => setProductDetails({ ...productDetails, subCategory: e.target.value })}
+                      onChange={(e) => {
+                        setProductDetails({ ...productDetails, subCategory: e.target.value })
+                        setSelectedSubCategory(e.target.value)
+                      }}
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                     >
                       <option value="">Select sub category</option>
-                      {subCategories.filter((subCat) => subCat.category === productDetails.category).map((subCat) => (
+                      {filteredSubCategories.map((subCat) => (
 
                         <option key={subCat._id} value={subCat._id}>
                           {subCat.name}
@@ -389,11 +456,14 @@ const AdminProducts = () => {
                   <label className="text-sm font-semibold text-gray-900 block mb-2">Brand</label>
                   <select
                     value={productDetails.brand}
-                    onChange={(e) => setProductDetails({ ...productDetails, brand: e.target.value })}
+                    onChange={(e) => {
+                      setProductDetails({ ...productDetails, brand: e.target.value })
+                      setSelectedBrand(e.target.value)
+                    }}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                   >
                     <option value="">Select brand</option>
-                    {brands.filter((brand) => brand.subCategory === productDetails.subCategory).map((brand) => (
+                    {filteredBrands.map((brand) => (
                       <option key={brand._id} value={brand._id}>
                         {brand.name}
                       </option>
@@ -448,7 +518,7 @@ const AdminProducts = () => {
                             className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                             //value={productDetails[`specifications${subIndex + 1}`]}
                             value={productDetails.specifications[subIndex]}
-                            onChange={(e) => addProductSpecs({subIndex,e})}
+                            onChange={(e) => addProductSpecs({ subIndex, e })}
                           />
                         </div>
                       ))}
@@ -538,9 +608,11 @@ const AdminProducts = () => {
                   <label className="text-sm font-semibold text-gray-900 block mb-2">Product Name</label>
                   <input
                     type="text"
-                    defaultValue={editingProduct?.name || ''}
+                    defaultValue={editProductDetails.name || ''}
+                    onChange={(e) => setEditProductDetails({ ...editProductDetails, name: e.target.value })}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                     placeholder="Enter product name"
+
                   />
                 </div>
 
@@ -549,32 +621,38 @@ const AdminProducts = () => {
                   <div>
                     <label className="text-sm font-semibold text-gray-900 block mb-2">Category</label>
                     <select
-                      defaultValue={editingProduct?.category}
+                      value={editProductDetails.category}
+                      onChange={(e) => {
+                        console.log(editProductDetails.subCategory)
+                        setEditProductDetails({ ...editProductDetails, category: e.target.value });
+                        setSelectedCategory(e.target.value)
+                      }}
+
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                     >
                       <option value="">Select category</option>
-                      <option value="iPhone">iPhone</option>
-                      <option value="Samsung">Samsung</option>
-                      <option value="OnePlus">OnePlus</option>
-                      <option value="Google">Google</option>
-                      <option value="Vivo">Vivo</option>
-                      <option value="Nothing">Nothing</option>
+                      {
+                        categories.map((cat) =>
+                          <option key={cat._id} value={cat._id}>{cat.name}</option>
+                        )
+                      }
+
                     </select>
                   </div>
                   <div>
                     <label className="text-sm font-semibold text-gray-900 block mb-2">Sub Category</label>
                     <select
-                      defaultValue={editingProduct?.subCategory || ''}
+                      value={editProductDetails.subCategory}
+                      onChange={(e) => {
+                        setEditProductDetails({ ...editProductDetails, subCategory: e.target.value })
+                        setSelectedSubCategory(e.target.value)
+                      }}
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                     >
                       <option value="">Select sub category</option>
-                      <option value="Flagship">Flagship</option>
-                      <option value="Mid-Range">Mid-Range</option>
-                      <option value="Budget">Budget</option>
-                      <option value="Pro Series">Pro Series</option>
-                      <option value="Lite Series">Lite Series</option>
-                      <option value="Gaming">Gaming</option>
-                      <option value="Foldable">Foldable</option>
+                      {filteredSubCategories.map((subCat) =>
+
+                        <option key={subCat._id} value={subCat._id}>{subCat.name}</option>)}
                     </select>
                   </div>
                 </div>
@@ -583,22 +661,14 @@ const AdminProducts = () => {
                 <div>
                   <label className="text-sm font-semibold text-gray-900 block mb-2">Brand</label>
                   <select
-                    defaultValue={editingProduct?.brand || ''}
+                    value={editProductDetails.brand || ''}
+                    onChange={(e) => setEditProductDetails({ ...editProductDetails, brand: e.target.value })}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                   >
                     <option value="">Select brand</option>
-                    <option value="Apple">Apple</option>
-                    <option value="Samsung">Samsung</option>
-                    <option value="OnePlus">OnePlus</option>
-                    <option value="Google">Google</option>
-                    <option value="Vivo">Vivo</option>
-                    <option value="Oppo">Oppo</option>
-                    <option value="Xiaomi">Xiaomi</option>
-                    <option value="Realme">Realme</option>
-                    <option value="Nothing">Nothing</option>
-                    <option value="Motorola">Motorola</option>
-                    <option value="Nokia">Nokia</option>
-                    <option value="Asus">Asus</option>
+                    {filteredBrands.map((brand) =>
+
+                      <option key={brand._id} value={brand._id}>{brand.name}</option>)}
                   </select>
                 </div>
 
@@ -608,7 +678,8 @@ const AdminProducts = () => {
                     <label className="text-sm font-semibold text-gray-900 block mb-2">Price (₹)</label>
                     <input
                       type="number"
-                      defaultValue={editingProduct?.price || ''}
+                      value={editProductDetails.price || ''}
+                      onChange={(e) => setEditProductDetails({ ...editProductDetails, price: e.target.value })}
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                       placeholder="0"
                     />
@@ -617,7 +688,8 @@ const AdminProducts = () => {
                     <label className="text-sm font-semibold text-gray-900 block mb-2">Offer Price (₹)</label>
                     <input
                       type="number"
-                      defaultValue={editingProduct?.offerPrice || ''}
+                      value={editProductDetails.offerPrice || ''}
+                      onChange={(e) => setEditProductDetails({ ...editProductDetails, offerPrice: e.target.value })}
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                       placeholder="0"
                     />
@@ -626,7 +698,8 @@ const AdminProducts = () => {
                     <label className="text-sm font-semibold text-gray-900 block mb-2">Stock</label>
                     <input
                       type="number"
-                      defaultValue={editingProduct?.stock || ''}
+                      value={editProductDetails.stock || ''}
+                      onChange={(e) => setEditProductDetails({ ...editProductDetails, stock: e.target.value })}
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                       placeholder="0"
                     />
@@ -636,70 +709,31 @@ const AdminProducts = () => {
                 {/* Specifications Section */}
                 <div className="space-y-4">
                   <label className="text-sm font-semibold text-gray-900 block">Specifications</label>
+                  {specs.map((spec, index) => (
+                    <div key={index} className="grid grid-cols-2 gap-4">
+                      {spec.subDiv.map((subSpec, subIndex) => (
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs text-gray-500 block mb-1">Specification 1</label>
-                      <input
-                        type="text"
-                        defaultValue={editingProduct?.specs?.ram || ''}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                        <div key={subIndex}>
+                          <label className="text-xs text-gray-500 block mb-1">{subSpec}</label>
+                          <input
+                            type="text"
+                            placeholder={subIndex < 3 ? 'Enter specification' : 'optional'}
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                            value={editProductDetails.specifications[subIndex]}
+                            onChange={(e) => {
 
-                      />
+                              const updateEditingSpec = [...editProductDetails.specifications]
+                              updateEditingSpec[subIndex] = e.target.value;
+                              setEditProductDetails({ ...editProductDetails, specifications: updateEditingSpec })
+
+                            }}
+                          />
+                        </div>
+                      ))}
+
+
                     </div>
-                    <div>
-                      <label className="text-xs text-gray-500 block mb-1">Specification 2</label>
-                      <input
-                        type="text"
-                        defaultValue={editingProduct?.specs?.storage || ''}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs text-gray-500 block mb-1">Specification 3</label>
-                      <input
-                        type="text"
-                        defaultValue={editingProduct?.specs?.display || ''}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-500 block mb-1">Specification 4</label>
-                      <input
-                        type="text"
-                        defaultValue={editingProduct?.specs?.camera || ''}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                        placeholder='optional'
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs text-gray-500 block mb-1">Specification 5</label>
-                      <input
-                        type="text"
-                        defaultValue={editingProduct?.specs?.battery || ''}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                        placeholder='optional'
-
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-500 block mb-1">Specification 6</label>
-                      <input
-                        type="text"
-                        defaultValue={editingProduct?.specs?.processor || ''}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-                        placeholder='optional'
-                      />
-                    </div>
-                  </div>
+                  ))}
                 </div>
 
                 {/* Description */}
@@ -709,14 +743,19 @@ const AdminProducts = () => {
                     rows={4}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all resize-none"
                     placeholder="Enter product description..."
-                    defaultValue={editingProduct?.description || ''}
+                    value={editProductDetails.description}
+                    onChange={(e) =>
+
+                      setEditProductDetails({ ...editProductDetails, description: e.target.value })
+                    }
                   />
                 </div>
                 {/* Status */}
                 <div>
                   <label className="text-sm font-semibold text-gray-900 block mb-2">Status (Active)</label>
                   <select
-                    defaultValue={editingProduct?.status || 'active'}
+                    value={editProductDetails.status}
+                    onChange={(e) => setEditProductDetails({ ...editProductDetails, status: e.target.value })}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                   >
                     <option value="active">Yes (Active)</option>
@@ -732,8 +771,11 @@ const AdminProducts = () => {
                 >
                   Cancel
                 </button>
-                <button className="flex-1 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors shadow-lg shadow-orange-500/20">
-                  {editingProduct ? 'Save Changes' : 'Add Product'}
+                <button
+
+                  onClick={sendEditProducts}
+                  className="flex-1 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors shadow-lg shadow-orange-500/20">
+                  Save changes
                 </button>
               </div>
             </motion.div>
@@ -788,5 +830,13 @@ const AdminProducts = () => {
     </div>
   )
 }
+
+
+
+
+
+
+
+
 
 export default AdminProducts
