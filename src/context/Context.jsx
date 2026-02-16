@@ -1,16 +1,20 @@
 import { refresh } from 'aos'
 import React, { useEffect, useState } from 'react'
 import { createContext } from 'react'
-import Trailloading from"../assets/Trailloading.json"
+import Trailloading from "../assets/Trailloading.json"
 export const appContext = createContext()
 
 export const AppContextProvider = ({ children }) => {
-    const [CSB, setCSB ] = useState([])
-    const [products,setProducts]=useState([])
+    const environment = "production"
+    const [CSB, setCSB] = useState([])
+    const [products, setProducts] = useState([])
     const [cart, setCart] = useState([])
-
     const [loading, setLoading] = useState(true)
-
+    let URL;
+    if (environment === "production") {
+        URL = "https://sunmobiles-b.vercel.app/api"
+    }
+    else { URL = "http://localhost:3000/api" }
     useEffect(() => {
         const savedCart = localStorage.getItem('cart')
         if (savedCart) {
@@ -53,13 +57,13 @@ export const AppContextProvider = ({ children }) => {
         try {
             setLoading(true)
             const [csbRes, productsRes] = await Promise.all([
-                fetch("http://localhost:3000/api/gets/get-csb"),
-                fetch("http://localhost:3000/api/gets/get-products")
+                fetch(URL+"/gets/get-csb"),
+                fetch(URL+"/gets/get-products")
             ])
-            
+
             const csbData = await csbRes.json()
             const productsData = await productsRes.json()
-            
+
             setCSB(csbData)
             setProducts(productsData)
         } catch (error) {
@@ -82,7 +86,8 @@ export const AppContextProvider = ({ children }) => {
         addToCart,
         removeFromCart,
         Trailloading,
-        loading
+        loading,
+        URL,
     }
 
     return (

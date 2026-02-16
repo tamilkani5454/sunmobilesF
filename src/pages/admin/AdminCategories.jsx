@@ -15,7 +15,7 @@ import {
 import { appContext } from '../../context/Context'
 
 const AdminCategories = () => {
-  const { CSB, refreshCSB, loading } = useContext(appContext)
+  const { CSB, refreshCSB, loading,URL } = useContext(appContext)
 
   // Local state for UI selection
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -113,7 +113,7 @@ const AdminCategories = () => {
   const handleSaveItem = async () => {
     if (modalMode == "create") {
 
-      const API_BASE = import.meta.env.VITE_API_BASE_URL + "/uploads";
+      const API_BASE = URL+"/uploads";
       const body = { name: newItemName.trim() };
       let url;
       if (modalType === 'category') url = "/add-category";
@@ -128,7 +128,7 @@ const AdminCategories = () => {
       })
     }
     else if (modalMode === "edit") {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL + "/update";
+      const API_BASE = URL+"/update";
       const body = { name: newItemName.trim() };
       let url;
       if (modalType === 'category') url = "/edit-category";

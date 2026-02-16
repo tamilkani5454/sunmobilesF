@@ -25,7 +25,7 @@ const productsData = Products
 
 
 const AdminProducts = () => {
-  const { CSB, refreshCSB, products, loading: contextLoading } = useContext(appContext);
+  const { CSB, refreshCSB, products, loading: contextLoading,URL } = useContext(appContext);
   const maxImages = 4;
   const [searchQuery, setSearchQuery] = useState('')
   const [showModal, setShowModal] = useState(false)
@@ -139,13 +139,13 @@ const AdminProducts = () => {
       }
     });
 
-    await fetch("http://localhost:3000/api/uploads/add-product", {
+    await fetch(URL+"/uploads/add-product", {
       method: "POST",
       body: formdata
     });
   };
   const sendEditProducts = async () => {
-    const res = await fetch("http://localhost:3000/api/update/edit-products", {
+    const res = await fetch(URL+"/update/edit-products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(editProductDetails)
@@ -175,7 +175,7 @@ const AdminProducts = () => {
   }
 
   const confirmDelete = async() => {
-    const res = await fetch("http://localhost:3000/api/update/delete-products", {
+    const res = await fetch(URL+"/update/delete-products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({id:deleteProduct})
