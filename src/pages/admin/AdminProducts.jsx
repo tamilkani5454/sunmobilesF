@@ -188,7 +188,7 @@ const AdminProducts = () => {
     const updatedFiles = [...imageFiles];
     updatedFiles[index] = {
       file: file,
-      previewUrl: URL.createObjectURL(file)
+      previewUrl: window.URL.createObjectURL(file)
     }
     setImageFiles(updatedFiles)
   };
@@ -196,7 +196,7 @@ const AdminProducts = () => {
   const removeImage = (index, e) => {
     const updatedFiles = [...imageFiles];
     if (updatedFiles[index]?.previewUrl) {
-      URL.revokeObjectURL(updatedFiles[index].previewUrl);
+      window.URL.revokeObjectURL(updatedFiles[index].previewUrl);
     }
     updatedFiles[index] = null;
     setImageFiles(updatedFiles)
