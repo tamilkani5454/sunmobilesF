@@ -7,7 +7,7 @@ import { appContext } from '../../context/Context'
 
 
 const Checkout = () => {
-    const { cart } = useContext(appContext)
+    const { cart,URL } = useContext(appContext)
     const [paymentMethod, setPaymentMethod] = useState(null)
     // Calculate totals
     const subtotal = cart.reduce((acc, item) => acc + (item.offerPrice * item.quantity), 0)
@@ -29,7 +29,7 @@ const Checkout = () => {
     })
     // Razorpay popup open function
     const payment = async (amount, order_id, key) => {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/payment/create-payment`, {
+        const res = await fetch(`${URL}/payment/create-payment`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ amount: amount }),
@@ -43,7 +43,7 @@ const Checkout = () => {
             handler: async function (response) {
                 // payment success -> verify pannuvom
                 const verifyRes = await fetch(
-                    `${import.meta.env.VITE_API_BASE_URL}/payment/verify-payment`,
+                    `${URL}/payment/verify-payment`,
                     {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -70,7 +70,7 @@ const Checkout = () => {
 
     // Place order + create razorpay order
     const handlePlaceOrder = async () => {
-        const url = import.meta.env.VITE_API_BASE_URL + "/uploads/add-orders";
+        const url = URL + "/uploads/add-orders";
         const res = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
