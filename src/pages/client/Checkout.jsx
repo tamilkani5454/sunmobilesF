@@ -7,7 +7,7 @@ import { appContext } from '../../context/Context'
 
 
 const Checkout = () => {
-    const { cart,URL } = useContext(appContext)
+    const { cart, URL, setCart } = useContext(appContext)
     const [paymentMethod, setPaymentMethod] = useState(null)
     // Calculate totals
     const subtotal = cart.reduce((acc, item) => acc + (item.offerPrice * item.quantity), 0)
@@ -53,6 +53,12 @@ const Checkout = () => {
 
                 const verifyData = await verifyRes.json();
                 alert(verifyData.message);
+                if (verifyData.success) {
+                    setStep(3)
+                    localStorage.clear("cart")
+                    setCart([])
+                    return
+                }
             },
             prefill: {
                 name: "Sun Mobiless",
@@ -84,7 +90,11 @@ const Checkout = () => {
         if (data.message == "success") {
             setOrderId(data.order_id)
             if (paymentMethod === "PAS") {
-                return setStep(3)
+                setStep(3)
+                localStorage.clear("cart")
+                setCart([])
+                return
+
             }
         }
         // 🔥 direct-aa values pass pannrom

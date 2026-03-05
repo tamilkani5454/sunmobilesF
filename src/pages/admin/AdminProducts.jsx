@@ -19,13 +19,10 @@ import { form, pre } from 'framer-motion/client'
 import { appContext } from '../../context/Context'
 import Lottie from 'lottie-react'
 import trail from "../../assets/Trailloading.json"
-const productsData = Products
-
-
 
 
 const AdminProducts = () => {
-  const { CSB, refreshCSB, products, loading: contextLoading,URL } = useContext(appContext);
+  const { CSB, refreshCSB, products, loading: contextLoading, URL, refreshProducts } = useContext(appContext);
   const maxImages = 4;
   const [searchQuery, setSearchQuery] = useState('')
   const [showModal, setShowModal] = useState(false)
@@ -138,18 +135,34 @@ const AdminProducts = () => {
         formdata.append("images", img.file);
       }
     });
+    setLoading(true)
 
-    await fetch(URL+"/uploads/add-product", {
+    const res = await fetch(URL + "/uploads/add-product", {
       method: "POST",
       body: formdata
     });
+    const data = await res.json()
+    if (data.success) {
+      refreshProducts()
+      setLoading(false)
+    }
   };
   const sendEditProducts = async () => {
-    const res = await fetch(URL+"/update/edit-products", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editProductDetails)
-    })
+    try {
+      setLoading(true)
+      const res = await fetch(URL + "/update/edit-products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editProductDetails)
+      })
+      const data = await res.json()
+      if (data.success) {
+        refreshProducts()
+        alert(data.message)
+        setShowModalEdit(false)
+      }
+    } finally { setLoading(false) }
+
 
   }
 
@@ -174,11 +187,11 @@ const AdminProducts = () => {
     setShowDeleteModal(true)
   }
 
-  const confirmDelete = async() => {
-    const res = await fetch(URL+"/update/delete-products", {
+  const confirmDelete = async () => {
+    const res = await fetch(URL + "/update/delete-products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({id:deleteProduct})
+      body: JSON.stringify({ id: deleteProduct })
     })
   }
 

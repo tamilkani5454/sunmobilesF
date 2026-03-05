@@ -38,14 +38,6 @@ const Products = () => {
   const { products, CSB, loading } = useContext(appContext)
   const { categories = [], subCategories = [], brands = [] } = CSB || {}
   const [searchQuery, setSearchQuery] = useState('')
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
-      </div>
-    )
-  }
   const [selectedCategories, setSelectedCategories] = useState([])
   const [selectedSubCategories, setSelectedSubCategories] = useState([])
   const [priceRange, setPriceRange] = useState([0, 50000])
@@ -60,10 +52,12 @@ const Products = () => {
 
   const [openSections, setOpenSections] = useState({ category: true, price: true, brand: true })
 
+
+
   // Extract unique categories and brands
   // Extract unique categories
   // No need to extract unique categories/brands from products anymore, use CSB
-  
+
   // Helper to get name by ID
   const getCategoryName = (id) => categories.find(c => c._id === id)?.name || id
   const getSubCategoryName = (id) => subCategories.find(s => s._id === id)?.name || id
@@ -73,22 +67,22 @@ const Products = () => {
   // If no category selected, show all brands.
   // If category selected, show brands that belong to subcategories of that category.
   const availableBrands = useMemo(() => {
-     if (selectedCategories.length === 0) return brands;
-     
-     // Find subcategories for selected categories
-     const validSubCategoryIds = subCategories
-        .filter(sub => selectedCategories.includes(sub.Category))
-        .map(sub => sub._id);
-        
-     return brands.filter(brand => validSubCategoryIds.includes(brand.SubCategory));
+    if (selectedCategories.length === 0) return brands;
+
+    // Find subcategories for selected categories
+    const validSubCategoryIds = subCategories
+      .filter(sub => selectedCategories.includes(sub.Category))
+      .map(sub => sub._id);
+
+    return brands.filter(brand => validSubCategoryIds.includes(brand.SubCategory));
   }, [brands, subCategories, selectedCategories]);
 
   // When categories change, clean up selected brands that are no longer valid
   // (Optional: strict cleanup or keep specific brands selected to avoid annoyance)
   useEffect(() => {
-     // If we want to clear brands that are no longer part of selected categories:
-     const validBrandIds = availableBrands.map(b => b._id);
-     setSelectedBrands(prev => prev.filter(b => validBrandIds.includes(b)));
+    // If we want to clear brands that are no longer part of selected categories:
+    const validBrandIds = availableBrands.map(b => b._id);
+    setSelectedBrands(prev => prev.filter(b => validBrandIds.includes(b)));
   }, [availableBrands]);
 
 
@@ -100,10 +94,10 @@ const Products = () => {
 
   // Build Hierarchy: { "CategoryId": ["SubCategoryObject"] }
   const categoryHierarchy = useMemo(() => {
-      return categories.reduce((acc, cat) => {
-        acc[cat._id] = subCategories.filter(sub => sub.Category === cat._id);
-        return acc;
-      }, {});
+    return categories.reduce((acc, cat) => {
+      acc[cat._id] = subCategories.filter(sub => sub.Category === cat._id);
+      return acc;
+    }, {});
   }, [categories, subCategories]);
 
   const getBrandCount = (brandId) => products.filter(p => p.brand === brandId).length
@@ -180,88 +174,95 @@ const Products = () => {
     setPriceRange([0, 50000])
     setSortBy('default')
   }
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
-        {/* Banner Section */}
-        {/* Hero Banner Section */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          className="relative w-full h-[50vh] min-h-96 overflow-hidden shadow-xl"
-        >
-          {/* Background Image with Parallax-like effect */}
-          <motion.img 
-            initial={{ scale: 1.1 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
-            src={BannerImg} 
-            alt="Products Banner" 
-            className="w-full h-full object-cover" 
-          />
-          
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/50 to-transparent flex flex-col items-center justify-center text-center px-4">
-             <motion.div
-                initial={{ y: 30, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.8 }}
-             >
-                <h2 className="text-5xl md:text-7xl font-serif font-bold text-white mb-4 drop-shadow-lg tracking-wide">
-                    Our <span className="text-orange-400">Collection</span>
-                </h2>
-                <p className="text-gray-200 text-lg md:text-xl max-w-2xl mx-auto font-light tracking-wide">
-                    Explore premium mobile accessories designed for performance and style.
-                </p>
-             </motion.div>
-          </div>
-        </motion.div>
+      {/* Banner Section */}
+      {/* Hero Banner Section */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        className="relative w-full h-[50vh] min-h-96 overflow-hidden shadow-xl"
+      >
+        {/* Background Image with Parallax-like effect */}
+        <motion.img
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          src={BannerImg}
+          alt="Products Banner"
+          className="w-full h-full object-cover"
+        />
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/50 to-transparent flex flex-col items-center justify-center text-center px-4">
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            <h2 className="text-5xl md:text-7xl font-serif font-bold text-white mb-4 drop-shadow-lg tracking-wide">
+              Our <span className="text-orange-400">Collection</span>
+            </h2>
+            <p className="text-gray-200 text-lg md:text-xl max-w-2xl mx-auto font-light tracking-wide">
+              Explore premium mobile accessories designed for performance and style.
+            </p>
+          </motion.div>
+        </div>
+      </motion.div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         {/* Page Title - Not Sticky */}
-        
+
         {/* Search & Mobile Filter - Sticky */}
 
         {/* Search & Mobile Filter - Sticky */}
         <div className="sticky top-16.25 z-30 bg-white/80 backdrop-blur-md py-1 -mx-4 px-4 md:-mx-8 md:px-8 mb-8 border-y border-gray-100 shadow-sm transition-all duration-300">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-             {/* Desktop Context / Stats */}
-             <div className="hidden md:block">
-                <p className="text-gray-500 font-medium">
-                    Showing <span className="text-gray-900 font-bold">{filteredProducts.length}</span> premium products
-                </p>
-             </div>
+            {/* Desktop Context / Stats */}
+            <div className="hidden md:block">
+              <p className="text-gray-500 font-medium">
+                Showing <span className="text-gray-900 font-bold">{filteredProducts.length}</span> premium products
+              </p>
+            </div>
 
-             <div className="flex w-full md:w-auto gap-3 items-center">
-               <div className="relative flex-1 md:w-96 group">
-                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300" size={20} />
-                 <input
-                   type="text"
-                   placeholder="Search for products, brands..."
-                   className="w-full pl-11 pr-10 py-3 rounded-full border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-300 shadow-sm group-hover:shadow-md"
-                   value={searchQuery}
-                   onChange={(e) => setSearchQuery(e.target.value)}
-                 />
-                 {searchQuery && (
-                    <button 
-                        onClick={() => setSearchQuery('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
-                    >
-                        <X size={16} />
-                    </button>
-                 )}
-               </div>
-               
-               <Button
-                 className={`md:hidden h-12 px-5 rounded-full border font-medium transition-all duration-300 ${showMobileFilters ? 'bg-orange-50 border-orange-200 text-orange-600' : 'bg-white border-gray-200 text-gray-700 hover:border-orange-300 hover:text-orange-600'}`}
-                 onClick={() => setShowMobileFilters(!showMobileFilters)}
-               >
-                 {showMobileFilters ? <X size={20} /> : <SlidersHorizontal size={20} />}
-                 <span className="ml-2">Filter</span>
-               </Button>
-             </div>
-           </div>
+            <div className="flex w-full md:w-auto gap-3 items-center">
+              <div className="relative flex-1 md:w-96 group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-orange-500 transition-colors duration-300" size={20} />
+                <input
+                  type="text"
+                  placeholder="Search for products, brands..."
+                  className="w-full pl-11 pr-10 py-3 rounded-full border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-300 shadow-sm group-hover:shadow-md"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+
+              <Button
+                className={`md:hidden h-12 px-5 rounded-full border font-medium transition-all duration-300 ${showMobileFilters ? 'bg-orange-50 border-orange-200 text-orange-600' : 'bg-white border-gray-200 text-gray-700 hover:border-orange-300 hover:text-orange-600'}`}
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+              >
+                {showMobileFilters ? <X size={20} /> : <SlidersHorizontal size={20} />}
+                <span className="ml-2">Filter</span>
+              </Button>
+            </div>
+          </div>
         </div>
 
         <div className="flex gap-8 items-start">
@@ -281,55 +282,55 @@ const Products = () => {
               toggle={() => setOpenSections(prev => ({ ...prev, category: !prev.category }))}
             >
               <div className="space-y-1">
-                 <div 
-                    className={`py-1.5 text-sm cursor-pointer hover:text-orange-600 transition-colors ${selectedCategories.length === 0 && selectedSubCategories.length === 0 ? 'text-orange-600 font-medium' : 'text-gray-600'}`}
-                    onClick={() => { setSelectedCategories([]); setSelectedSubCategories([]); }}
-                 >
-                    All Products
-                 </div>
+                <div
+                  className={`py-1.5 text-sm cursor-pointer hover:text-orange-600 transition-colors ${selectedCategories.length === 0 && selectedSubCategories.length === 0 ? 'text-orange-600 font-medium' : 'text-gray-600'}`}
+                  onClick={() => { setSelectedCategories([]); setSelectedSubCategories([]); }}
+                >
+                  All Products
+                </div>
                 {categories.map(cat => (
                   <div key={cat._id} className="flex flex-col">
-                    <div 
-                        className={`flex justify-between items-center py-1.5 cursor-pointer group ${selectedCategories.includes(cat._id) || expandedCategory === cat._id ? 'text-orange-900' : 'text-gray-600'}`}
-                        onClick={() => setExpandedCategory(expandedCategory === cat._id ? null : cat._id)}
+                    <div
+                      className={`flex justify-between items-center py-1.5 cursor-pointer group ${selectedCategories.includes(cat._id) || expandedCategory === cat._id ? 'text-orange-900' : 'text-gray-600'}`}
+                      onClick={() => setExpandedCategory(expandedCategory === cat._id ? null : cat._id)}
                     >
-                        <span className={`text-sm group-hover:text-orange-600 transition-colors ${selectedCategories.includes(cat._id) ? 'font-medium' : ''}`}>{cat.name}</span>
-                         {categoryHierarchy[cat._id] && categoryHierarchy[cat._id].length > 0 && (
-                            <ChevronDown size={14} className={`text-gray-400 transform transition-transform ${expandedCategory === cat._id ? 'rotate-180' : ''}`}/>
-                        )}
+                      <span className={`text-sm group-hover:text-orange-600 transition-colors ${selectedCategories.includes(cat._id) ? 'font-medium' : ''}`}>{cat.name}</span>
+                      {categoryHierarchy[cat._id] && categoryHierarchy[cat._id].length > 0 && (
+                        <ChevronDown size={14} className={`text-gray-400 transform transition-transform ${expandedCategory === cat._id ? 'rotate-180' : ''}`} />
+                      )}
                     </div>
-                    
+
                     <AnimatePresence>
-                        {expandedCategory === cat._id && (
-                            <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden"
+                      {expandedCategory === cat._id && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pl-3 border-l border-gray-100 ml-1 space-y-1 my-1">
+                            <div
+                              className={`py-1 text-xs cursor-pointer ${selectedCategories.includes(cat._id) && selectedSubCategories.length === 0 ? 'text-orange-600 font-medium' : 'text-gray-500 hover:text-gray-800'}`}
+                              onClick={() => {
+                                toggleCategory(cat._id)
+                                // Optional: Unselect subcategories of this category if needed, or keep them
+                                // setSelectedSubCategories(prev => prev.filter(s => !categoryHierarchy[cat._id].some(sub => sub._id === s)))
+                              }}
                             >
-                                <div className="pl-3 border-l border-gray-100 ml-1 space-y-1 my-1">
-                                    <div 
-                                        className={`py-1 text-xs cursor-pointer ${selectedCategories.includes(cat._id) && selectedSubCategories.length === 0 ? 'text-orange-600 font-medium' : 'text-gray-500 hover:text-gray-800'}`}
-                                        onClick={() => {
-                                            toggleCategory(cat._id)
-                                            // Optional: Unselect subcategories of this category if needed, or keep them
-                                            // setSelectedSubCategories(prev => prev.filter(s => !categoryHierarchy[cat._id].some(sub => sub._id === s)))
-                                        }}
-                                    >
-                                        All {cat.name}
-                                    </div>
-                                    {categoryHierarchy[cat._id] && categoryHierarchy[cat._id].map(sub => (
-                                        <div 
-                                            key={sub._id}
-                                            className={`py-1 text-xs cursor-pointer ${selectedSubCategories.includes(sub._id) ? 'text-orange-600 font-medium' : 'text-gray-500 hover:text-gray-800'}`}
-                                            onClick={() => toggleSubCategory(sub._id)}
-                                        >
-                                            {sub.name}
-                                        </div>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        )}
+                              All {cat.name}
+                            </div>
+                            {categoryHierarchy[cat._id] && categoryHierarchy[cat._id].map(sub => (
+                              <div
+                                key={sub._id}
+                                className={`py-1 text-xs cursor-pointer ${selectedSubCategories.includes(sub._id) ? 'text-orange-600 font-medium' : 'text-gray-500 hover:text-gray-800'}`}
+                                onClick={() => toggleSubCategory(sub._id)}
+                              >
+                                {sub.name}
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
                     </AnimatePresence>
                   </div>
                 ))}
@@ -464,13 +465,13 @@ const Products = () => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
-                  
+
                   {/* Sort By Section (Moved Inside) */}
                   <div className="space-y-3">
                     <h3 className="text-xl font-serif font-bold text-gray-900">Sort By</h3>
                     <div className="relative">
-                      <select 
-                        value={sortBy} 
+                      <select
+                        value={sortBy}
                         onChange={(e) => setSortBy(e.target.value)}
                         className="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:border-gray-500"
                       >
@@ -486,98 +487,98 @@ const Products = () => {
 
                   {/* Categories Section - Elegant Vertical List */}
                   <div className="space-y-3">
-                     <div 
-                        className="flex justify-between items-center cursor-pointer"
-                        onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                     >
-                        <h3 className="text-xl font-serif font-bold text-gray-900">Categories</h3>
-                        <div className="flex items-center gap-3">
-                            {(selectedCategories.length > 0 || selectedSubCategories.length > 0) && (
-                                <button 
-                                    onClick={(e) => { 
-                                        e.stopPropagation(); 
-                                        setSelectedCategories([]); 
-                                        setSelectedSubCategories([]); 
-                                        setExpandedCategory(null); 
-                                    }}
-                                    className="text-xs text-gray-400 underline"
-                                >
-                                    Clear
-                                </button>
-                            )}
-                            <ChevronDown size={20} className={`transform transition-transform ${isCategoriesOpen ? 'rotate-180' : ''}`}/>
-                        </div>
-                     </div>
-                    
-                    <AnimatePresence>
-                        {isCategoriesOpen && (
-                            <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden"
-                            >
-                                <div className="flex flex-col space-y-1 pt-2">
-                                    {/* All Products Item */}
-                                    <div 
-                                        className={`py-2 text-lg cursor-pointer transition-colors ${selectedCategories.length === 0 && selectedSubCategories.length === 0 ? 'text-orange-900 font-medium' : 'text-gray-500'}`}
-                                        onClick={() => { setSelectedCategories([]); setSelectedSubCategories([]); }}
-                                    >
-                                        All Products
-                                    </div>
-
-                                    {categories.map(cat => (
-                                        <div key={cat._id} className="flex flex-col">
-                                            <div 
-                                                className={`flex justify-between items-center py-2 cursor-pointer ${selectedCategories.includes(cat._id) || expandedCategory === cat._id ? 'text-orange-900 font-medium' : 'text-gray-600'}`}
-                                                onClick={() => {
-                                                    // Toggle Expand
-                                                    setExpandedCategory(expandedCategory === cat._id ? null : cat._id)
-                                                }}
-                                            >
-                                                <span className="text-lg">{cat.name}</span>
-                                                {categoryHierarchy[cat._id] && categoryHierarchy[cat._id].length > 0 && (
-                                                    <ChevronDown size={16} className={`transform transition-transform ${expandedCategory === cat._id ? 'rotate-180' : ''}`}/>
-                                                )}
-                                            </div>
-                                            
-                                            {/* Sub Categories */}
-                                            <AnimatePresence>
-                                                {expandedCategory === cat._id && (
-                                                    <motion.div
-                                                        initial={{ height: 0, opacity: 0 }}
-                                                        animate={{ height: 'auto', opacity: 1 }}
-                                                        exit={{ height: 0, opacity: 0 }}
-                                                        className="overflow-hidden"
-                                                    >
-                                                        <div className="pl-4 border-l-2 border-gray-100 ml-1 space-y-2 mb-2">
-                                                            <div 
-                                                                className={`py-1 text-sm cursor-pointer ${selectedCategories.includes(cat._id) && selectedSubCategories.length === 0 ? 'text-orange-700 font-medium pl-2 border-l-2 border-orange-700 -ml-4.5' : 'text-gray-500 hover:text-gray-800'}`}
-                                                                onClick={() => {
-                                                                    toggleCategory(cat._id)
-                                                                    // Optional: Logic for subcategories cleanup
-                                                                }}
-                                                            >
-                                                                All {cat.name}
-                                                            </div>
-                                                            {categoryHierarchy[cat._id] && categoryHierarchy[cat._id].map(sub => (
-                                                                <div 
-                                                                    key={sub._id}
-                                                                    className={`py-1 text-sm cursor-pointer ${selectedSubCategories.includes(sub._id) ? 'text-orange-700 font-medium pl-2 border-l-2 border-orange-700 -ml-4.5' : 'text-gray-500 hover:text-gray-800'}`}
-                                                                    onClick={() => toggleSubCategory(sub._id)}
-                                                                >
-                                                                    {sub.name}
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
-                                        </div>
-                                    ))}
-                                </div>
-                            </motion.div>
+                    <div
+                      className="flex justify-between items-center cursor-pointer"
+                      onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                    >
+                      <h3 className="text-xl font-serif font-bold text-gray-900">Categories</h3>
+                      <div className="flex items-center gap-3">
+                        {(selectedCategories.length > 0 || selectedSubCategories.length > 0) && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedCategories([]);
+                              setSelectedSubCategories([]);
+                              setExpandedCategory(null);
+                            }}
+                            className="text-xs text-gray-400 underline"
+                          >
+                            Clear
+                          </button>
                         )}
+                        <ChevronDown size={20} className={`transform transition-transform ${isCategoriesOpen ? 'rotate-180' : ''}`} />
+                      </div>
+                    </div>
+
+                    <AnimatePresence>
+                      {isCategoriesOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="flex flex-col space-y-1 pt-2">
+                            {/* All Products Item */}
+                            <div
+                              className={`py-2 text-lg cursor-pointer transition-colors ${selectedCategories.length === 0 && selectedSubCategories.length === 0 ? 'text-orange-900 font-medium' : 'text-gray-500'}`}
+                              onClick={() => { setSelectedCategories([]); setSelectedSubCategories([]); }}
+                            >
+                              All Products
+                            </div>
+
+                            {categories.map(cat => (
+                              <div key={cat._id} className="flex flex-col">
+                                <div
+                                  className={`flex justify-between items-center py-2 cursor-pointer ${selectedCategories.includes(cat._id) || expandedCategory === cat._id ? 'text-orange-900 font-medium' : 'text-gray-600'}`}
+                                  onClick={() => {
+                                    // Toggle Expand
+                                    setExpandedCategory(expandedCategory === cat._id ? null : cat._id)
+                                  }}
+                                >
+                                  <span className="text-lg">{cat.name}</span>
+                                  {categoryHierarchy[cat._id] && categoryHierarchy[cat._id].length > 0 && (
+                                    <ChevronDown size={16} className={`transform transition-transform ${expandedCategory === cat._id ? 'rotate-180' : ''}`} />
+                                  )}
+                                </div>
+
+                                {/* Sub Categories */}
+                                <AnimatePresence>
+                                  {expandedCategory === cat._id && (
+                                    <motion.div
+                                      initial={{ height: 0, opacity: 0 }}
+                                      animate={{ height: 'auto', opacity: 1 }}
+                                      exit={{ height: 0, opacity: 0 }}
+                                      className="overflow-hidden"
+                                    >
+                                      <div className="pl-4 border-l-2 border-gray-100 ml-1 space-y-2 mb-2">
+                                        <div
+                                          className={`py-1 text-sm cursor-pointer ${selectedCategories.includes(cat._id) && selectedSubCategories.length === 0 ? 'text-orange-700 font-medium pl-2 border-l-2 border-orange-700 -ml-4.5' : 'text-gray-500 hover:text-gray-800'}`}
+                                          onClick={() => {
+                                            toggleCategory(cat._id)
+                                            // Optional: Logic for subcategories cleanup
+                                          }}
+                                        >
+                                          All {cat.name}
+                                        </div>
+                                        {categoryHierarchy[cat._id] && categoryHierarchy[cat._id].map(sub => (
+                                          <div
+                                            key={sub._id}
+                                            className={`py-1 text-sm cursor-pointer ${selectedSubCategories.includes(sub._id) ? 'text-orange-700 font-medium pl-2 border-l-2 border-orange-700 -ml-4.5' : 'text-gray-500 hover:text-gray-800'}`}
+                                            onClick={() => toggleSubCategory(sub._id)}
+                                          >
+                                            {sub.name}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
                     </AnimatePresence>
                   </div>
 
@@ -615,38 +616,38 @@ const Products = () => {
                     </div>
                   </div> */}
 
-                   {/* Brands Section - Dropdown Accordion Style */}
-                   <div className="space-y-3 pb-20 border-t border-gray-100 pt-6">
-                    <div 
-                        className="flex justify-between items-center cursor-pointer"
-                        onClick={() => setIsBrandsOpen(!isBrandsOpen)}
+                  {/* Brands Section - Dropdown Accordion Style */}
+                  <div className="space-y-3 pb-20 border-t border-gray-100 pt-6">
+                    <div
+                      className="flex justify-between items-center cursor-pointer"
+                      onClick={() => setIsBrandsOpen(!isBrandsOpen)}
                     >
-                        <h3 className="text-xl font-serif font-bold text-gray-900">Brands</h3>
-                        <ChevronDown size={20} className={`transform transition-transform ${isBrandsOpen ? 'rotate-180' : ''}`}/>
+                      <h3 className="text-xl font-serif font-bold text-gray-900">Brands</h3>
+                      <ChevronDown size={20} className={`transform transition-transform ${isBrandsOpen ? 'rotate-180' : ''}`} />
                     </div>
-                    
+
                     <AnimatePresence>
-                        {isBrandsOpen && (
-                            <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden"
-                            >
-                                <div className="flex flex-col space-y-2 pt-2">
-                                  {availableBrands.map(brand => (
-                                    <div 
-                                        key={brand._id} 
-                                        className={`flex justify-between items-center py-1 cursor-pointer ${selectedBrands.includes(brand._id) ? 'text-orange-900 font-medium' : 'text-gray-500'}`}
-                                        onClick={() => toggleBrand(brand._id)}
-                                    >
-                                        <span className="text-lg">{brand.name}</span>
-                                        {selectedBrands.includes(brand._id) && <Check size={18} />}
-                                    </div>
-                                  ))}
-                                </div>
-                            </motion.div>
-                        )}
+                      {isBrandsOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="flex flex-col space-y-2 pt-2">
+                            {availableBrands.map(brand => (
+                              <div
+                                key={brand._id}
+                                className={`flex justify-between items-center py-1 cursor-pointer ${selectedBrands.includes(brand._id) ? 'text-orange-900 font-medium' : 'text-gray-500'}`}
+                                onClick={() => toggleBrand(brand._id)}
+                              >
+                                <span className="text-lg">{brand.name}</span>
+                                {selectedBrands.includes(brand._id) && <Check size={18} />}
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
                     </AnimatePresence>
                   </div>
                 </div>
