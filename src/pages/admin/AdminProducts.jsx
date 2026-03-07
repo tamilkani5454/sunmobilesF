@@ -19,7 +19,7 @@ import { form, pre } from 'framer-motion/client'
 import { appContext } from '../../context/Context'
 import Lottie from 'lottie-react'
 import trail from "../../assets/Trailloading.json"
-
+import toast from 'react-hot-toast'
 
 const AdminProducts = () => {
   const { CSB, refreshCSB, products, loading: contextLoading, URL, refreshProducts } = useContext(appContext);
@@ -143,8 +143,10 @@ const AdminProducts = () => {
     });
     const data = await res.json()
     if (data.success) {
+      toast.success(data.message)
       refreshProducts()
       setLoading(false)
+      setShowModal(false)
     }
   };
   const sendEditProducts = async () => {
@@ -158,7 +160,7 @@ const AdminProducts = () => {
       const data = await res.json()
       if (data.success) {
         refreshProducts()
-        alert(data.message)
+        toast.success(data.message)
         setShowModalEdit(false)
       }
     } finally { setLoading(false) }
@@ -193,6 +195,17 @@ const AdminProducts = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: deleteProduct })
     })
+    const data = await res.json()
+    if (data.success) {
+      setShowDeleteModal(false)
+      toast.success(data.message)
+      refreshProducts()
+    }
+    if (!data.success) {
+      toast.error(data.message)
+
+    }
+
   }
 
   const handleImageUpload = (index, e) => {
@@ -216,8 +229,8 @@ const AdminProducts = () => {
   }
   if (loading || contextLoading)
     return (
-      <div className='flex items-center justify-center min-h-screen'>
-        <Lottie animationData={trail} className='w-100 h-100' />
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
       </div>
     )
   return (

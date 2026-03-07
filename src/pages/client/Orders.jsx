@@ -4,10 +4,11 @@ import { User, Package, LogOut, ChevronRight, Box, Truck, CheckCircle } from 'lu
 import { Button } from '../../components/ui/button'
 import { appContext } from '../../context/Context'
 import { useContext, useState, useEffect } from 'react'
-
+import { useNavigate } from 'react-router-dom'
 
 const Orders = () => {
-    const { URL } = useContext(appContext)
+    const navigate = useNavigate()
+    const { URL, products } = useContext(appContext)
     const [orders, setOrders] = useState([])
     const [loadingOrders, setLoadingOrders] = useState(true)
 
@@ -85,7 +86,12 @@ const Orders = () => {
                                 <Link to="/orders" className="flex items-center gap-3 px-4 py-3 bg-orange-50 text-orange-700 rounded-xl font-medium transition-colors">
                                     <Package size={18} /> My Orders
                                 </Link>
-                                <button className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl font-medium transition-colors mt-2">dont change anything 
+                                <button
+                                    onClick={() => {
+                                        localStorage.removeItem("token");
+                                        navigate("/login")
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl font-medium transition-colors mt-2">dont change anything
                                     <LogOut size={18} /> Log Out
                                 </button>
                             </nav>
@@ -115,8 +121,8 @@ const Orders = () => {
                                             <div className="flex items-center gap-3">
                                                 <h3 className="font-bold text-base md:text-lg text-gray-900">Order #{order.orderId}</h3>
                                                 <span className={`px-2 md:px-2.5 py-0.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wide border ${['delivered', 'completed'].includes(order.orderStatus?.toLowerCase()) ? 'bg-green-50 text-green-700 border-green-100' :
-                                                        ['processing', 'placed', 'pending'].includes(order.orderStatus?.toLowerCase()) ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                                                            'bg-red-50 text-red-700 border-red-100'
+                                                    ['processing', 'placed', 'pending'].includes(order.orderStatus?.toLowerCase()) ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                                        'bg-red-50 text-red-700 border-red-100'
                                                     }`}>
                                                     {order.orderStatus || 'Pending'}
                                                 </span>
@@ -136,17 +142,17 @@ const Orders = () => {
                                             <p className="text-[10px] md:text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Items</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {order.products && order.products.map((prod, idx) => {
-                                                    const productInfo = allProducts?.find(p => p._id === prod.productId) || {};
+                                                    const productInfo = products?.find(p => p._id === prod.productId) || {};
                                                     return (
-                                                    <Link to={`/products/${prod.productId}`} key={idx} className="inline-flex items-center gap-2 px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-100 group">
-                                                        {productInfo.images && productInfo.images[0] ? (
-                                                            <img src={productInfo.images[0].url} alt={productInfo.name || "Product"} className="w-5 h-5 md:w-8 md:h-8 object-cover rounded-md group-hover:scale-105 transition-transform" />
-                                                        ) : (
-                                                            <Package size={16} className="text-gray-400" />
-                                                        )}
-                                                        <span className="text-[10px] md:text-sm font-medium text-gray-700 max-w-25 md:max-w-50 truncate group-hover:text-orange-600 transition-colors">{productInfo.name || `Product ID: ${prod.productId}`}</span>
-                                                        <span className="text-[9px] md:text-xs font-semibold text-gray-500 bg-white px-1.5 py-0.5 rounded border border-gray-200">x{prod.quantity}</span>
-                                                    </Link>
+                                                        <Link to={`/products/${prod.productId}`} key={idx} className="inline-flex items-center gap-2 px-2 py-1 md:px-2.5 md:py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-100 group">
+                                                            {productInfo.images && productInfo.images[0] ? (
+                                                                <img src={productInfo.images[0].url} alt={productInfo.name || "Product"} className="w-5 h-5 md:w-8 md:h-8 object-cover rounded-md group-hover:scale-105 transition-transform" />
+                                                            ) : (
+                                                                <Package size={16} className="text-gray-400" />
+                                                            )}
+                                                            <span className="text-[10px] md:text-sm font-medium text-gray-700 max-w-25 md:max-w-50 truncate group-hover:text-orange-600 transition-colors">{productInfo.name || `Product ID: ${prod.productId}`}</span>
+                                                            <span className="text-[9px] md:text-xs font-semibold text-gray-500 bg-white px-1.5 py-0.5 rounded border border-gray-200">x{prod.quantity}</span>
+                                                        </Link>
                                                     )
                                                 })}
                                             </div>

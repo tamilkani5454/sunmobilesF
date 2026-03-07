@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Button } from '../../components/ui/button'
 import { ArrowLeft, UserPlus } from 'lucide-react'
+import { appContext } from '../../context/Context'
+import toast from 'react-hot-toast'
 
 const Signup = () => {
+  const { URL } = useContext(appContext)
   const [password, setPassword] = useState({
     password: "",
     confirmPassword: "",
@@ -19,23 +22,39 @@ const Signup = () => {
   })
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const updateuser = { ...password, [name]: value }
-    setPassword(updateuser);
+
+    const updatePassword = { ...password, [name]: value };
+    setPassword(updatePassword);
+
+    if (name === "password") {
+      setUser({ ...user, password: value });
+    }
+
     if (name === "confirmPassword") {
-      setMatch(updateuser.password === value)
-      setUser({ ...user, password:password.confirmPassword})
+      setMatch(updatePassword.password === value);
+    }
+  };
+  const handleCreate = async () => {
+    const newUser = {
+      ...user,
+      password: password.password
+    }
+    console.log(newUser)
+    const res = await fetch(URL + "/register/sign-up", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newUser)
+    })
+    const data = await res.json()
+    console.log(data)
+    if (data.success) {
+      toast.success(data.message)
+    }
+    if (!data.success) {
+      toast.error(data.message)
     }
   }
-  const handleCreate=async()=>{
-    const url=import.meta.env.VITE_API_BASE_URL+"/register/sign-up"
-    const res=await fetch(url,{
-      method:"POST",
-      headers:{ "Content-Type": "application/json" },
-      body:JSON.stringify(user)
-    })
-    const data=await res.json()
-  }
- 
+
 
 
   return (

@@ -8,7 +8,7 @@ const Contact = () => {
     {
       icon: Phone,
       title: "Phone Support",
-      details: "+91 98765 43210",
+      details: "+91 9626650425",
       sub: "Mon-Sat 9am to 6pm",
       color: "bg-blue-50 text-blue-600",
       cta: "Call Now"
@@ -36,8 +36,8 @@ const Contact = () => {
       {/* Header */}
       <div className="bg-gray-900 text-white py-16 mb-8 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-20">
-             <div className="absolute -top-[50%] -left-[20%] w-[80%] h-[200%] bg-gradient-to-tr from-orange-500/30 to-transparent rounded-full blur-3xl"></div>
-             <div className="absolute top-[20%] right-[10%] w-[30%] h-[100%] bg-gradient-to-bl from-blue-500/30 to-transparent rounded-full blur-3xl"></div>
+             <div className="absolute -top-[50%] -left-[20%] w-[80%] h-[200%] bg-linear-to-tr from-orange-500/30 to-transparent rounded-full blur-3xl"></div>
+             <div className="absolute top-[20%] right-[10%] w-[30%] h-full bg-linear-to-bl from-blue-500/30 to-transparent rounded-full blur-3xl"></div>
         </div>
         
         <div className="container mx-auto px-4 text-center relative z-10">
@@ -54,7 +54,7 @@ const Contact = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl md:text-5xl font-bold mb-6 tracking-tight"
           >
-            Get in <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">Touch</span>
+            Get in <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-red-500">Touch</span>
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -133,7 +133,7 @@ const Contact = () => {
             transition={{ delay: 0.2 }}
             className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-10 lg:col-span-2 relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-orange-50 to-transparent rounded-full blur-3xl -mr-20 -mt-20 opacity-60"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-linear-to-br from-orange-50 to-transparent rounded-full blur-3xl -mr-20 -mt-20 opacity-60"></div>
             
             <div className="mb-8 relative z-10">
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">Send us a Message</h2>
@@ -169,7 +169,7 @@ const Contact = () => {
               </div>
 
               <div className="pt-4">
-                <Button className="w-full h-14 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-xl shadow-lg shadow-orange-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 text-lg font-bold tracking-wide">
+                <Button className="w-full h-14 bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-xl shadow-lg shadow-orange-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 text-lg font-bold tracking-wide">
                   Send Message <Send size={20} />
                 </Button>
               </div>

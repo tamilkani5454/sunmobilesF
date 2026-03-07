@@ -103,7 +103,7 @@ const Footer = () => {
                             <div className="p-2 bg-gray-900 rounded-lg group-hover:bg-orange-500/20 transition-colors border border-gray-800">
                                 <Phone className="text-orange-500" size={20} />
                             </div>
-                            <span>+91 98765 43210</span>
+                            <a href="tel:+91 9626650425">+91 9626650425</a>
                         </li>
                         <li className="flex items-center space-x-3 group">
                             <div className="p-2 bg-gray-900 rounded-lg group-hover:bg-orange-500/20 transition-colors border border-gray-800">

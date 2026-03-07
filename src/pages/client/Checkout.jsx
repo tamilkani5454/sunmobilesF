@@ -29,49 +29,55 @@ const Checkout = () => {
     })
     // Razorpay popup open function
     const payment = async (amount, order_id, key) => {
-        const res = await fetch(`${URL}/payment/create-payment`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ amount: amount }),
-        });
-        const order = await res.json();
-        const options = {
-            key: key, // Razorpay key_id
-            amount: order.order.amount, // paisa
-            currency: "INR",
-            order_id: order.order.id, // 🔥 important
-            handler: async function (response) {
-                // payment success -> verify pannuvom
-                const verifyRes = await fetch(
-                    `${URL}/payment/verify-payment`,
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ response, order_id }),
+        try {
+            setLoading(true)
+            const res = await fetch(`${URL}/payment/create-payment`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ amount: amount }),
+            });
+            const order = await res.json();
+            const options = {
+                key: key, // Razorpay key_id
+                amount: order.order.amount, // paisa
+                currency: "INR",
+                order_id: order.order.id, // 🔥 important
+                handler: async function (response) {
+                    // payment success -> verify pannuvom
+                    const verifyRes = await fetch(
+                        `${URL}/payment/verify-payment`,
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ response, order_id }),
+                        }
+                    );
+
+                    const verifyData = await verifyRes.json();
+                    alert(verifyData.message);
+                    if (verifyData.success) {
+                        setStep(3)
+                        localStorage.clear("cart")
+                        setCart([])
+                        return
                     }
-                );
+                },
+                prefill: {
+                    name: "Sun Mobiless",
+                    email: "sunmobiles@gmail.com",
+                    contact: "6382953195",
+                },
+                theme: {
+                    color: "#3399cc",
+                },
+            };
 
-                const verifyData = await verifyRes.json();
-                alert(verifyData.message);
-                if (verifyData.success) {
-                    setStep(3)
-                    localStorage.clear("cart")
-                    setCart([])
-                    return
-                }
-            },
-            prefill: {
-                name: "Sun Mobiless",
-                email: "sunmobiles@gmail.com",
-                contact: "6382953195",
-            },
-            theme: {
-                color: "#3399cc",
-            },
-        };
+            const rzp1 = new window.Razorpay(options);
+            rzp1.open();
+        } finally {
+            setLoading(false)
+        }
 
-        const rzp1 = new window.Razorpay(options);
-        rzp1.open();
     };
 
     // Place order + create razorpay order
@@ -97,7 +103,7 @@ const Checkout = () => {
 
             }
         }
-        // 🔥 direct-aa values pass pannrom
+        // 🔥 direct values pass 
         payment(data.amount, data.order_id, data.key);
     };
 
@@ -135,7 +141,6 @@ const Checkout = () => {
             </div>
         )
     }
-
     return (
         <div className="min-h-screen bg-gray-50 pb-24 md:pb-20 pt-8 md:pt-10">
             <div className="container mx-auto px-4 max-w-6xl">

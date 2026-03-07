@@ -28,52 +28,87 @@ import Orders from './pages/client/Orders'
 import OrderDetails from './pages/client/OrderDetails'
 import ScrollToTop from './common/ScrollToTop'
 import ScrollToTopOnNavigate from './common/ScrollToTopOnNavigate'
-
+import PrivateRoutes from './components/PrivateRoutes'
+import AdminRoutes from './components/AdminRoutes'
+import  { Toaster } from 'react-hot-toast';
 
 function App() {
- 
+
 
   return (
     <>
-     <ScrollToTopOnNavigate />
-     <Routes>
-      {/* Admin Routes - No Navbar/Footer */}
-      <Route path='/admin' element={<AdminLogin />} />
-      <Route path='/admin/*' element={<AdminLayout />}>
-        <Route path='dashboard' element={<AdminDashboard />} />
-        <Route path='products' element={<AdminProducts />} />
-        <Route path='orders' element={<AdminOrders />} />
-        <Route path='categories' element={<AdminCategories />} />
-        <Route path='settings' element={<AdminSettings />} />
-      </Route>
+      <ScrollToTopOnNavigate />
+      <Routes>
+        {/* Admin Routes - No Navbar/Footer */}
 
-      {/* Client Routes - With Navbar/Footer */}
-      <Route path='/*' element={
-        <>
-          <Navbar/>
-          <Routes>
-            <Route path='/' element={<Home/>}/>
-            <Route path='/about' element={<About/>} />
-            <Route path='/contact' element={<Contact />} />
-            <Route path='/products' element={<Products />} />
-            <Route path='/products/:id' element={<ProductDetails />} />
-            <Route path='/faq' element={<Faq />} />
-            <Route path='/privacy-policy' element={<PrivacyPolicy />} />
-            <Route path='/terms' element={<TOS />} />
-            <Route path='/shipping' element={<Shipping />} />
-            <Route path='/cart' element={<Cart />} />
-            <Route path='/checkout' element={<Checkout />} />
-            <Route path='/login' element={<Login />} />
-            <Route path='/signup' element={<Signup />} />
-            <Route path='/profile' element={<Profile />} />
-            <Route path='/orders' element={<Orders />} />
-            <Route path='/orders/:id' element={<OrderDetails />} />
-          </Routes>
-          <ScrollToTop />
-          <Footer/>
-        </>
-      }/>
-     </Routes>
+        <Route path='/admin' element={<AdminLogin />} />
+        <Route element={<AdminRoutes />}>
+          <Route path='/admin/*' element={<AdminLayout />}>
+            <Route path='dashboard' element={<AdminDashboard />} />
+            <Route path='products' element={<AdminProducts />} />
+            <Route path='orders' element={<AdminOrders />} />
+            <Route path='categories' element={<AdminCategories />} />
+            <Route path='settings' element={<AdminSettings />} />
+          </Route>
+        </Route>
+
+
+        {/* Client Routes - With Navbar/Footer */}
+        <Route path='/*' element={
+          <>
+            <Navbar />
+            <Routes>
+              <Route path='/' element={<Home />} />
+              <Route path='/about' element={<About />} />
+              <Route path='/contact' element={<Contact />} />
+              <Route path='/products' element={<Products />} />
+              <Route path='/products/:id' element={<ProductDetails />} />
+              <Route path='/faq' element={<Faq />} />
+              <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+              <Route path='/terms' element={<TOS />} />
+              <Route path='/shipping' element={<Shipping />} />
+              <Route path='/cart' element={<Cart />} />
+              <Route path='/checkout' element={<Checkout />} />
+              <Route path='/login' element={<Login />} />
+              <Route path='/signup' element={<Signup />} />
+              <Route element={<PrivateRoutes />}>
+                <Route path='/profile' element={<Profile />} />
+                <Route path='/orders' element={<Orders />} />
+                <Route path='/orders/:id' element={<OrderDetails />} />
+              </Route>
+            </Routes>
+            <ScrollToTop />
+            <Footer />
+          </>
+        } />
+      </Routes>
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        gutter={8}
+        containerClassName=""
+        containerStyle={{}}
+        toasterId="default"
+        toastOptions={{
+          // Define default options
+          className: '',
+          duration: 5000,
+          removeDelay: 1000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+
+          // Default options for specific types
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: 'green',
+              secondary: 'black',
+            },
+          },
+        }}
+      />
     </>
   )
 }
