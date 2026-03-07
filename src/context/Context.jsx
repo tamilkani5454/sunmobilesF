@@ -5,7 +5,7 @@ import Trailloading from "../assets/Trailloading.json"
 export const appContext = createContext()
 
 export const AppContextProvider = ({ children }) => {
-    const environment = "production"
+    const environment = "noproduction"
     const [CSB, setCSB] = useState([])
     const [products, setProducts] = useState([])
     const [cart, setCart] = useState([])
