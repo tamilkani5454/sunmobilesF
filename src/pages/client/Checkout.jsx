@@ -93,7 +93,7 @@ const Checkout = () => {
             }),
         });
         const data = await res.json();
-        if (data.message == "success") {
+        if (data.success) {
             setOrderId(data.order_id)
             if (paymentMethod === "PAS") {
                 setStep(3)

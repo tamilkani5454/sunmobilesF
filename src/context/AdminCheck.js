@@ -7,7 +7,7 @@ const useAdminCheck = () => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("adminToken");
 
   useEffect(() => {
 
@@ -22,7 +22,6 @@ const useAdminCheck = () => {
         });
 
         const data = await res.json();
-        console.log(data)
         if (data.success) {
           setIsAdmin(true);
         }

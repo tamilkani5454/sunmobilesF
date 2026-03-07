@@ -5,11 +5,12 @@ import Trailloading from "../assets/Trailloading.json"
 export const appContext = createContext()
 
 export const AppContextProvider = ({ children }) => {
-    const environment = "production"
+    const environment = "noproduction"
     const [CSB, setCSB] = useState([])
     const [products, setProducts] = useState([])
     const [cart, setCart] = useState([])
     const [loading, setLoading] = useState(true)
+    const[userCounts,setUserCounts]=useState(null)
     let URL;
     if (environment === "production") {
         URL = "https://sunmobiles-b.vercel.app/api"
@@ -56,16 +57,18 @@ export const AppContextProvider = ({ children }) => {
     const fetchData = async () => {
         try {
             setLoading(true)
-            const [csbRes, productsRes] = await Promise.all([
-                fetch(URL+"/gets/get-csb"),
-                fetch(URL+"/gets/get-products")
+            const [csbRes, productsRes, userCount] = await Promise.all([
+                fetch(URL + "/gets/get-csb"),
+                fetch(URL + "/gets/get-products"),
+                fetch(URL + "/gets/userCount")
             ])
 
             const csbData = await csbRes.json()
             const productsData = await productsRes.json()
-
+            const count=await userCount.json()
             setCSB(csbData)
             setProducts(productsData)
+            setUserCounts(count.usersCount)
         } catch (error) {
             console.error("Error fetching data:", error)
         } finally {
@@ -89,6 +92,7 @@ export const AppContextProvider = ({ children }) => {
         loading,
         URL,
         setCart,
+        userCounts,
     }
 
     return (

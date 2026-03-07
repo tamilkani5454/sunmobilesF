@@ -31,7 +31,7 @@ const AdminLogin = () => {
         const data = await res.json()
         console.log(data)
         if (data.success) {
-            localStorage.setItem("token", data.token)
+            localStorage.setItem("adminToken", data.token)
             toast.success(data.message)
             navigate("/admin/dashboard")
 
