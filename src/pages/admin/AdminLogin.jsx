@@ -22,23 +22,41 @@ const AdminLogin = () => {
         email: "",
         password: ""
     })
+    const [loading, setLoading] = useState(false)
     const handleSubmit = async () => {
-        const res = await fetch(URL + "/register/admin-login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(admin)
-        })
-        const data = await res.json()
-        console.log(data)
-        if (data.success) {
-            localStorage.setItem("adminToken", data.token)
-            toast.success(data.message)
-            navigate("/admin/dashboard")
+        if (!admin.email || !admin.password) {
+            toast.error("Please fill all the fields");
+            return;
+        }
+        try {
+            setLoading(true)
+            const res = await fetch(URL + "/register/admin-login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(admin)
+            })
+            const data = await res.json()
+            console.log(data)
+            if (data.success) {
+                localStorage.setItem("adminToken", data.token)
+                toast.success(data.message)
+                navigate("/admin/dashboard")
 
+            }
+            if (!data.success) {
+                toast.error(data.message)
+            }
+        } finally {
+            setLoading(false)
         }
-        if (!data.success) {
-            toast.error(data.message)
-        }
+    }
+    
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+            </div>
+        )
     }
     return (
         <div className="min-h-screen bg-white flex">

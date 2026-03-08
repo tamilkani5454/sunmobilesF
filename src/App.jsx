@@ -30,7 +30,7 @@ import ScrollToTop from './common/ScrollToTop'
 import ScrollToTopOnNavigate from './common/ScrollToTopOnNavigate'
 import PrivateRoutes from './components/PrivateRoutes'
 import AdminRoutes from './components/AdminRoutes'
-import  { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
 
@@ -68,11 +68,11 @@ function App() {
               <Route path='/terms' element={<TOS />} />
               <Route path='/shipping' element={<Shipping />} />
               <Route path='/cart' element={<Cart />} />
-              <Route path='/checkout' element={<Checkout />} />
               <Route path='/login' element={<Login />} />
               <Route path='/signup' element={<Signup />} />
               <Route element={<PrivateRoutes />}>
                 <Route path='/profile' element={<Profile />} />
+                <Route path='/checkout' element={<Checkout />} />
                 <Route path='/orders' element={<Orders />} />
                 <Route path='/orders/:id' element={<OrderDetails />} />
               </Route>

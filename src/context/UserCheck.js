@@ -24,6 +24,8 @@ const UserCheck = () => {
         const data = await res.json();
         if (data.success) {
           setIsUser(true);
+          const user = data.user
+          localStorage.setItem("user", JSON.stringify(user._id))
         }
 
       } catch (err) {
@@ -39,7 +41,7 @@ const UserCheck = () => {
 
   return { loading, isUser };
 };
-  
+
 
 
 export default UserCheck

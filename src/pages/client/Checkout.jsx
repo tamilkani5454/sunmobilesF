@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { CheckCircle, CreditCard, Truck, AlertCircle, ArrowLeft, ShieldCheck } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 import { appContext } from '../../context/Context'
+import toast from 'react-hot-toast'
 
 
 const Checkout = () => {
@@ -54,10 +55,11 @@ const Checkout = () => {
                     );
 
                     const verifyData = await verifyRes.json();
-                    alert(verifyData.message);
+                    console.log(verifyData)
                     if (verifyData.success) {
+                        toast.success(verifyData.message)
                         setStep(3)
-                        localStorage.clear("cart")
+                        localStorage.removeItem("cart")
                         setCart([])
                         return
                     }
@@ -66,9 +68,6 @@ const Checkout = () => {
                     name: "Sun Mobiless",
                     email: "sunmobiles@gmail.com",
                     contact: "6382953195",
-                },
-                theme: {
-                    color: "#3399cc",
                 },
             };
 
@@ -82,29 +81,34 @@ const Checkout = () => {
 
     // Place order + create razorpay order
     const handlePlaceOrder = async () => {
-        const url = URL + "/uploads/add-orders";
-        const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                shippingAddress: address,
-                cart: cart,
-                paymentMethod: paymentMethod,
-            }),
-        });
-        const data = await res.json();
-        if (data.success) {
-            setOrderId(data.order_id)
-            if (paymentMethod === "PAS") {
-                setStep(3)
-                localStorage.clear("cart")
-                setCart([])
-                return
+        try {
+            setLoading(true);
+            const url = URL + "/uploads/add-orders";
+            const res = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    shippingAddress: address,
+                    cart: cart,
+                    paymentMethod: paymentMethod,
+                }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                setOrderId(data.order_id)
+                if (paymentMethod === "PAS") {
+                    setStep(3)
+                    localStorage.clear("cart")
+                    setCart([])
+                    return
 
+                }
             }
+            // 🔥 direct values pass 
+            payment(data.amount, data.order_id, data.key);
+        } finally {
+            setLoading(false);
         }
-        // 🔥 direct values pass 
-        payment(data.amount, data.order_id, data.key);
     };
 
 
@@ -141,6 +145,14 @@ const Checkout = () => {
             </div>
         )
     }
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+            </div>
+        )
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 pb-24 md:pb-20 pt-8 md:pt-10">
             <div className="container mx-auto px-4 max-w-6xl">
@@ -206,9 +218,9 @@ const Checkout = () => {
                                     <div className="mt-8 justify-end hidden md:flex">
                                         <Button onClick={() => {
 
-                                            if (!address.address || !address.city || !address.email || !address.firstName || !address.lastName || !address.phoneNumber || !address.pincode) {
-                                                alert("fill all the details")
-                                                return
+                                            if (!address.address || !address.city || !address.email || !address.firstName || !address.lastName || !address.phoneNumber || !address.pincode || !address.state) {
+                                                toast.error("Please fill all the fields");
+                                                return;
                                             }
                                             setStep(2);
 
@@ -298,9 +310,9 @@ const Checkout = () => {
             <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 md:hidden z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                 {step === 1 ? (
                     <Button onClick={() => {
-                        if (!address.address || !address.city || !address.email || !address.firstName || !address.lastName || !address.phoneNumber || !address.pincode) {
-                            alert("fill all the details")
-                            return
+                        if (!address.address || !address.city || !address.email || !address.firstName || !address.lastName || !address.phoneNumber || !address.pincode || !address.state) {
+                            toast.error("Please fill all the fields");
+                            return;
                         }
                         setStep(2)
                     }} className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-xl h-12 shadow-lg shadow-orange-600/20 text-lg">

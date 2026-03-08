@@ -13,6 +13,7 @@ import {
   Pencil
 } from 'lucide-react'
 import { appContext } from '../../context/Context'
+import toast from 'react-hot-toast'
 
 const AdminCategories = () => {
   const { CSB, refreshCSB, loading,URL } = useContext(appContext)
@@ -31,6 +32,7 @@ const AdminCategories = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [filteredSubCategories, setFilteredSubCategories] = useState([])
   const [filteredBrands, setFilteredBrand] = useState([])
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Delete Modal State
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -111,37 +113,46 @@ const AdminCategories = () => {
   // Using explicit API endpoints based on user's previous code pattern.
   // NOTE: Verify these endpoints and body payloads with your backend.
   const handleSaveItem = async () => {
-    if (modalMode == "create") {
-
-      const API_BASE = URL+"/uploads";
-      const body = { name: newItemName.trim() };
-      let url;
-      if (modalType === 'category') url = "/add-category";
-      if (modalType === 'subcategory') body.categoryId = selectedCategory;
-      if (modalType === 'subcategory') url = '/add-subcategory';
-      if (modalType === 'brand') body.subCategoryID = selectedSubCategory;
-      if (modalType === 'brand') url = '/add-brand';
-      const response = await fetch(API_BASE + url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      })
+    if (!newItemName.trim()) {
+      toast.error("Please fill all the fields");
+      return;
     }
-    else if (modalMode === "edit") {
-      const API_BASE = URL+"/update";
-      const body = { name: newItemName.trim() };
-      let url;
-      if (modalType === 'category') url = "/edit-category";
-      if (modalType === 'category') body.categoryId = selectedCategory;
-      if (modalType === 'subcategory') url = '/edit-subcategory';
-      if (modalType === 'subcategory') body.subCategoryID = selectedSubCategory;
-      if (modalType === 'brand') url = '/edit-brand';
-      if (modalType === 'brand') body.brandID = selectedBrand;
-      const response = await fetch(API_BASE + url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      })
+    try {
+      setActionLoading(true);
+      if (modalMode == "create") {
+
+        const API_BASE = URL+"/uploads";
+        const body = { name: newItemName.trim() };
+        let url;
+        if (modalType === 'category') url = "/add-category";
+        if (modalType === 'subcategory') body.categoryId = selectedCategory;
+        if (modalType === 'subcategory') url = '/add-subcategory';
+        if (modalType === 'brand') body.subCategoryID = selectedSubCategory;
+        if (modalType === 'brand') url = '/add-brand';
+        const response = await fetch(API_BASE + url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        })
+      }
+      else if (modalMode === "edit") {
+        const API_BASE = URL+"/update";
+        const body = { name: newItemName.trim() };
+        let url;
+        if (modalType === 'category') url = "/edit-category";
+        if (modalType === 'category') body.categoryId = selectedCategory;
+        if (modalType === 'subcategory') url = '/edit-subcategory';
+        if (modalType === 'subcategory') body.subCategoryID = selectedSubCategory;
+        if (modalType === 'brand') url = '/edit-brand';
+        if (modalType === 'brand') body.brandID = selectedBrand;
+        const response = await fetch(API_BASE + url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        })
+      }
+    } finally {
+      setActionLoading(false);
     }
   }
 
@@ -157,6 +168,7 @@ const AdminCategories = () => {
     if (deleteType === 'brand') url = `${API_BASE}/uploads/delete-brand/${itemToDelete._id}`;
 
     try {
+      setActionLoading(true);
       const response = await fetch(url, { method: 'DELETE' });
 
       if (response.ok) {
@@ -176,14 +188,23 @@ const AdminCategories = () => {
       }
     } catch (error) {
       console.error("Delete error:", error);
+    } finally {
+      // Fallback/Forced refresh
+      if (refreshCSB) await refreshCSB();
+      setShowDeleteModal(false);
+      setItemToDelete(null);
+      setActionLoading(false);
     }
-
-    // Fallback/Forced refresh
-    if (refreshCSB) await refreshCSB();
-    setShowDeleteModal(false);
-    setItemToDelete(null);
   };
 
+
+  if (loading || actionLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 h-[calc(100vh-100px)]">
@@ -194,12 +215,6 @@ const AdminCategories = () => {
           <p className="text-gray-500 mt-1">Manage Categories, Sub-categories, and Brands</p>
         </div>
       </div>
-
-      {loading && (
-        <div className="flex items-center justify-center h-full">
-             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
-        </div>
-      )}
 
       {/* Mobile Tab Navigation */}
       <div className={`flex lg:hidden bg-gray-100 p-1 rounded-xl mb-4 ${loading ? 'hidden' : ''}`}>

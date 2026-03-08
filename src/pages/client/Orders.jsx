@@ -10,7 +10,7 @@ const Orders = () => {
     const navigate = useNavigate()
     const { URL, products } = useContext(appContext)
     const [orders, setOrders] = useState([])
-    const [loadingOrders, setLoadingOrders] = useState(true)
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -33,7 +33,7 @@ const Orders = () => {
             } catch (error) {
                 console.error("Error fetching orders:", error)
             } finally {
-                setLoadingOrders(false)
+                setLoading(false)
             }
         }
         fetchOrders()
@@ -50,6 +50,14 @@ const Orders = () => {
     const itemVariants = {
         hidden: { opacity: 0, y: 10 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+            </div>
+        )
     }
 
     return (
@@ -105,9 +113,7 @@ const Orders = () => {
                         animate="visible"
                         className="lg:col-span-3 space-y-4"
                     >
-                        {loadingOrders ? (
-                            <div className="text-center py-12 text-gray-500">Loading orders...</div>
-                        ) : orders.length === 0 ? (
+                        {orders.length === 0 ? (
                             <div className="text-center py-12 text-gray-500">No orders found.</div>
                         ) : orders.map((order) => (
                             <motion.div

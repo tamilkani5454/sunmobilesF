@@ -37,10 +37,12 @@ const AdminDashboard = () => {
   const token = localStorage.getItem("adminToken");
   const { URL, products,userCounts } = useContext(appContext)
   const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
+        setLoading(true)
         const resData = await fetch(URL + "/gets/all-orders", {
           method: "GET",
           headers: {
@@ -57,6 +59,8 @@ const AdminDashboard = () => {
         }
       } catch (err) {
         console.error("Failed to fetch orders:", err);
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -101,6 +105,14 @@ const AdminDashboard = () => {
       color: 'green'
     },
   ]
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

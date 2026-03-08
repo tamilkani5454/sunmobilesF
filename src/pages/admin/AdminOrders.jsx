@@ -49,6 +49,7 @@ const AdminOrders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
+        setLoading(true)
         const resData = await fetch(URL + "/gets/all-orders", {
           method: "GET",
           headers: {
@@ -65,6 +66,8 @@ const AdminOrders = () => {
         }
       } catch (err) {
         console.error("Failed to fetch orders:", err);
+      } finally {
+        setLoading(false)
       }
     }
 

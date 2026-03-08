@@ -16,29 +16,47 @@ const Login = () => {
     email: "",
     password: ""
   })
+  const [loading, setLoading] = useState(false)
   useEffect(() => {
     if (isUser) {
       navigate("/profile");
     }
   }, [isUser]);
   const sendLogin = async () => {
-    const res = await fetch(URL + "/register/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(users)
-    })
-    const data = await res.json()
-    console.log("message", data)
-    console.log(data)
-    if (data.success) {
-      toast.success(data.message)
-      localStorage.setItem("token", data.token)
-      navigate("/profile")
+    if (!users.email || !users.password) {
+      toast.error("Please fill all the fields");
+      return;
     }
-    if (!data.success) {
-      toast.error(data.message)
+    try {
+      setLoading(true)
+      const res = await fetch(URL + "/register/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(users)
+      })
+      const data = await res.json()
+      console.log("message", data)
+      console.log(data)
+      if (data.success) {
+        toast.success(data.message)
+        localStorage.setItem("token", data.token)
+        navigate("/profile")
+      }
+      if (!data.success) {
+        toast.error(data.message)
+      }
+    } finally {
+      setLoading(false)
     }
   }
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4 relative overflow-hidden">
       {/* Decorative Background */}

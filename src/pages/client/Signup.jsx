@@ -20,6 +20,7 @@ const Signup = () => {
     email: "",
     password: ""
   })
+  const [loading, setLoading] = useState(false)
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -35,27 +36,42 @@ const Signup = () => {
     }
   };
   const handleCreate = async () => {
-    const newUser = {
-      ...user,
-      password: password.password
+    if (!user.firstName || !user.lastName || !user.phoneNumber || !user.email || !password.password || !password.confirmPassword) {
+      toast.error("Please fill all the fields");
+      return;
     }
-    console.log(newUser)
-    const res = await fetch(URL + "/register/sign-up", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newUser)
-    })
-    const data = await res.json()
-    console.log(data)
-    if (data.success) {
-      toast.success(data.message)
-    }
-    if (!data.success) {
-      toast.error(data.message)
+    try {
+      setLoading(true)
+      const newUser = {
+        ...user,
+        password: password.password
+      }
+      console.log(newUser)
+      const res = await fetch(URL + "/register/sign-up", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newUser)
+      })
+      const data = await res.json()
+      console.log(data)
+      if (data.success) {
+        toast.success(data.message)
+      }
+      if (!data.success) {
+        toast.error(data.message)
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
-
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4 py-12 relative overflow-hidden">

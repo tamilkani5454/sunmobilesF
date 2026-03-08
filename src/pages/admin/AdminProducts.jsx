@@ -118,7 +118,7 @@ const AdminProducts = () => {
   )
   const sendProduct = async () => {
     if (!productDetails.name || !productDetails.category || !productDetails.description || !productDetails.specifications[0] || !productDetails.specifications[1] || !productDetails.specifications[2] || !productDetails.subCategory || !productDetails.brand || !productDetails.price || !productDetails.stock || !productDetails.status || imageFiles[0] === null) {
-      alert("Please fill in all required fields.");
+      toast.error("Please fill all the fields");
       return;
     }
     const formdata = new FormData();
@@ -135,21 +135,28 @@ const AdminProducts = () => {
         formdata.append("images", img.file);
       }
     });
-    setLoading(true)
+    try {
+      setLoading(true)
 
-    const res = await fetch(URL + "/uploads/add-product", {
-      method: "POST",
-      body: formdata
-    });
-    const data = await res.json()
-    if (data.success) {
-      toast.success(data.message)
-      refreshProducts()
+      const res = await fetch(URL + "/uploads/add-product", {
+        method: "POST",
+        body: formdata
+      });
+      const data = await res.json()
+      if (data.success) {
+        toast.success(data.message)
+        refreshProducts()
+        setShowModal(false)
+      }
+    } finally {
       setLoading(false)
-      setShowModal(false)
     }
   };
   const sendEditProducts = async () => {
+    if (!editProductDetails.name || !editProductDetails.category || !editProductDetails.description || !editProductDetails.specifications[0] || !editProductDetails.specifications[1] || !editProductDetails.specifications[2] || !editProductDetails.subCategory || !editProductDetails.brand || !editProductDetails.price || !editProductDetails.stock || !editProductDetails.status) {
+      toast.error("Please fill all the fields");
+      return;
+    }
     try {
       setLoading(true)
       const res = await fetch(URL + "/update/edit-products", {
@@ -190,20 +197,25 @@ const AdminProducts = () => {
   }
 
   const confirmDelete = async () => {
-    const res = await fetch(URL + "/update/delete-products", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: deleteProduct })
-    })
-    const data = await res.json()
-    if (data.success) {
-      setShowDeleteModal(false)
-      toast.success(data.message)
-      refreshProducts()
-    }
-    if (!data.success) {
-      toast.error(data.message)
+    try {
+      setLoading(true)
+      const res = await fetch(URL + "/update/delete-products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: deleteProduct })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setShowDeleteModal(false)
+        toast.success(data.message)
+        refreshProducts()
+      }
+      if (!data.success) {
+        toast.error(data.message)
 
+      }
+    } finally {
+      setLoading(false)
     }
 
   }
